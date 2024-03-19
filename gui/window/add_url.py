@@ -27,6 +27,7 @@ class AddUrlWindow(ctk.CTkToplevel):
         self._entry_var = ctk.StringVar(value="")
         self._entry_url = ctk.CTkEntry(self, textvariable=self._entry_var)
         self._entry_url.grid(row=0, column=2, padx=(10, 10), pady=(10, 10), sticky="we", columnspan=16)
+        self._entry_url.bind("<Return>", lambda e: self._on_get_info())
 
         self._button_get_info = ctk.CTkButton(self, text="Get info", width=24, command=self._on_get_info)
         self._button_get_info.grid(row=0, column=18, pady=(10, 10), sticky="w")

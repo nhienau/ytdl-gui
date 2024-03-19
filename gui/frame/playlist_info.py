@@ -30,6 +30,9 @@ class PlaylistInfoFrame(ctk.CTkFrame):
             if len(uploaders) == 1:
                 data["uploader"] = uploaders[0]
 
+        for entry in data["entries"]:
+            entry["selected"] = True
+
         self._data = data
         self._detail_frame.set_data(data)
         self._entries_table.set_data(data["entries"])
