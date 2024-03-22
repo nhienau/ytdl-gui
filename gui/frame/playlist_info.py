@@ -26,6 +26,8 @@ class PlaylistInfoFrame(ctk.CTkFrame):
             # Combine all videos, lives, etc. from a channel
             uploader = data["uploader"]
             data["entries"] = [entry for category in data["entries"] for entry in category["entries"]]
+            for entry in data["entries"]:
+                entry["uploader"] = data["uploader"]
             data["playlist_count"] = len(data["entries"])
                 
         if data["uploader"] is None:
@@ -48,6 +50,7 @@ class PlaylistInfoFrame(ctk.CTkFrame):
         self._entries_table.display(self._entries_table.get_data())
 
     def on_add_entries_click(self, add_all=True):
+        self._detail_frame.hide_confirm_message()
         self._detail_frame.add_option = "all" if add_all is True else "selected"
         self._detail_frame.hide_additional_message()
         data = self._entries_table.get_data()

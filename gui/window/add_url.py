@@ -120,7 +120,7 @@ class AddUrlWindow(ctk.CTkToplevel):
         if result["webpage_url_domain"] is None or not "release_year" in result:
             url = result["url"] if "url" in result else result["original_url"]
             result = await extract(url, cookies_from_browser)
-        if not "uploader_id" in result or result["uploader_id"] is None:
+        if not "thumbnails" in result or len(result.get("thumbnails")) == 0:
             raise Exception("URL cannot be resolved")
         return result
 
