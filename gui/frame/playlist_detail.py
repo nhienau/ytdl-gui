@@ -69,9 +69,12 @@ class PlaylistDetailFrame(ctk.CTkScrollableFrame):
         else:
             set_textbox_value(self._textbox_playlist_count_value, data["playlist_count"])
         
-        state = "normal" if len(data["entries"]) > 0 else "disabled"
-        self._button_add_selected.configure(state=state)
-        self._button_add_all.configure(state=state)
+        if len(data["entries"]) > 0:
+            self._button_add_selected.grid(row=5, column=2, pady=(0, 5), sticky="e")
+            self._button_add_all.grid(row=5, column=3, pady=(0, 5), sticky="e")
+        else:
+            self._button_add_selected.grid_forget()
+            self._button_add_all.grid_forget()
 
     def show_confirm_message(self, message, show_button = True):
         set_textbox_value(self._textbox_confirm_add, message)
@@ -94,5 +97,17 @@ class PlaylistDetailFrame(ctk.CTkScrollableFrame):
     def hide_additional_message(self):
         set_textbox_value(self._textbox_additional_information, "")
         self._textbox_additional_information.grid_forget()
+
+    def clear_detail(self):
+        self._data = {}
+        self.add_option = ""
+        self.hide_additional_message()
+        self.hide_confirm_message()
+        set_textbox_value(self._textbox_playlist_title, "")
+        set_textbox_value(self._textbox_playlist_uploader, "")
+        set_textbox_value(self._textbox_url, "")
+        set_textbox_value(self._textbox_playlist_count_value, "")
+        self._button_add_selected.grid_forget()
+        self._button_add_all.grid_forget()
 
 

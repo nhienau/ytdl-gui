@@ -68,6 +68,7 @@ class AddUrlWindow(ctk.CTkToplevel):
         self._label_instruction.grid_forget()
         self._video_info_frame.grid_forget()
         self._playlist_info_frame.grid_forget()
+        self._playlist_info_frame.clear_frame()
 
         loading_message = "Loading"
         if self._cookies_from_browser != "":

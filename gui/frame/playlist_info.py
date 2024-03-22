@@ -81,4 +81,8 @@ class PlaylistInfoFrame(ctk.CTkFrame):
         self._detail_frame.show_additional_message(message)
         self._detail_frame.hide_confirm_message()
 
+    def clear_frame(self):
+        self._detail_frame.clear_detail()
+        self._entries_table.clear_entries()
+
 

@@ -112,4 +112,12 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         # except:
         #     print("Error")
             
+    def clear_entries(self):
+        self._data = []
+        self._query = ""
+        self._query_results = self._data
+        self._search_entry_var.set("")
+        self._button_clear_input.grid_forget()
+        self.display(self._data)
+
 
