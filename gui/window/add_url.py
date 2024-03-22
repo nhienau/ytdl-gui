@@ -20,6 +20,7 @@ class AddUrlWindow(ctk.CTkToplevel):
         self._thread = None
         self._stop_event = threading.Event()
         self._cookies_from_browser = ""
+        self.callbacks = {}
 
         self._label_url = ctk.CTkLabel(self, text="URL")
         self._label_url.grid(row=0, column=1, pady=(10, 10), sticky="e")
@@ -87,7 +88,7 @@ class AddUrlWindow(ctk.CTkToplevel):
         try:
             result = async_loop.run_until_complete(self._extract_url(url, cookies_from_browser))
             if not self._stop_event.is_set():
-                callback(result)
+                callback(result, cookies_from_browser)
         except Exception as e:
             self._hide_message()
 
@@ -123,10 +124,12 @@ class AddUrlWindow(ctk.CTkToplevel):
             raise Exception("URL cannot be resolved")
         return result
 
-    def _handle_result(self, result):
+    def _handle_result(self, result, cookies_from_browser = ""):
         self._hide_message()
         self._entry_var.set("")
         print(result["title"])
+
+        result["cookies"] = cookies_from_browser
 
         if "entries" in result:
             # Result is a playlist, show playlist info frame
@@ -151,4 +154,11 @@ class AddUrlWindow(ctk.CTkToplevel):
         self._stop_event.set()
         self.destroy()
 
+    def add_callbacks(self, callbacks):
+        self.callbacks.update(callbacks)
+
+    def on_add_urls_callback(self, message):
+        set_textbox_value(self._textbox_message, message)
+        self._show_message()
+        
 
