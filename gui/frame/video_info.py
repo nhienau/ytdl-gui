@@ -6,6 +6,7 @@ from helper.datetime import to_duration_string, to_date_string
 class VideoInfoFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        self._parent = master
         self.grid_columnconfigure((1), weight=1)
         self._data = {}
 
@@ -51,7 +52,7 @@ class VideoInfoFrame(ctk.CTkFrame):
         self._textbox_resolution.grid(row=5, column=1, padx=10, pady=(0, 5), sticky="ew", columnspan=2)
         self._textbox_resolution.configure(height=20, state="disabled", border_width=0, border_spacing=0, corner_radius=0, fg_color="transparent")
 
-        self._button_add = ctk.CTkButton(self, text="Add")
+        self._button_add = ctk.CTkButton(self, text="Add", command=self._on_add_url)
         self._button_add.grid(row=6, column=2, padx=10, pady=(0, 10), sticky="w")
 
     def set_data(self, data):
@@ -65,4 +66,37 @@ class VideoInfoFrame(ctk.CTkFrame):
         set_textbox_value(self._textbox_url, data["original_url"])
         set_textbox_value(self._textbox_resolution, data["resolution"])
 
+    def clear_text(self):
+        set_textbox_value(self._textbox_title, "")
+        set_textbox_value(self._textbox_uploader, "")
+        set_textbox_value(self._textbox_upload_date_value, "")
+        set_textbox_value(self._textbox_duration_string, "")
+        set_textbox_value(self._textbox_url, "")
+        set_textbox_value(self._textbox_resolution, "")
+
+    def _on_add_url(self):
+        data = {
+            "title": self._data["title"],
+            "uploader": self._data["uploader"],
+            "upload_date": self._data["upload_date"],
+            "duration": self._data["duration"],
+            "duration_string": to_duration_string(int(self._data["duration"])),
+            "webpage_url": self._data["webpage_url"],
+            "original_url": self._data["original_url"],
+            "resolution": self._data["resolution"],
+            "cookies": self._data["cookies"],
+            "selected": True,
+        }
+        on_add_urls = self._parent.callbacks["on_add_urls"]
+        result = on_add_urls([data])
+
+        if result["added"] == 1:
+            message = f"Successfully added \"{data['title']}\"."
+        else:
+            message = f"\"{data['title']}\" has already been added."
+        
+        self._parent.on_add_urls_callback(message)
+        self.clear_text()
+        self.grid_forget()
+        
 
