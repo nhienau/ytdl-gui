@@ -30,8 +30,8 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self._button_select_all = ctk.CTkButton(self, text="Select all", width=24, command=lambda: self._toggle_all_checkboxes(True))
         self._button_select_all.grid(row=0, column=18, pady=10, sticky="ew")
 
-        self._button_unselect_all = ctk.CTkButton(self, text="Unselect all", width=24, command=lambda: self._toggle_all_checkboxes(False))
-        self._button_unselect_all.grid(row=0, column=19, padx=(5, 10), pady=10, sticky="ew")
+        self._button_deselect_all = ctk.CTkButton(self, text="Deselect all", width=24, command=lambda: self._toggle_all_checkboxes(False))
+        self._button_deselect_all.grid(row=0, column=19, padx=(5, 10), pady=10, sticky="ew")
 
         self._sheet = Sheet(self, data = data)
         self._sheet.headers([" ", "Title", "Uploader", "Duration", "URL"])
@@ -49,6 +49,10 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self._sheet.extra_bindings(["cell_select", "drag_select_cells"], func=lambda e: self._on_cell_selected(e))
         self._sheet.extra_bindings("deselect", func=lambda e: self._on_cell_deselected(e))
         self._sheet.extra_bindings("shift_cell_select", func=lambda e: self._on_shift_cell_selected(e))
+        self._sheet.popup_menu_add_command("Select marked URLs", lambda: self._toggle_marked_rows(True), empty_space_menu=False)
+        self._sheet.popup_menu_add_command("Deselect marked URLs", lambda: self._toggle_marked_rows(False), empty_space_menu=False)
+        self._sheet.popup_menu_add_command("Select all URLs", lambda: self._toggle_all_checkboxes(True), empty_space_menu=False)
+        self._sheet.popup_menu_add_command("Deselect all URLs", lambda: self._toggle_all_checkboxes(False), empty_space_menu=False)
         self._sheet.grid(row = 1, column = 0, sticky = "nswe", columnspan=20, padx=10, pady=(0, 10))
 
     def set_data(self, data):
@@ -185,5 +189,10 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self._search_entry_var.set("")
         self._button_clear_input.grid_forget()
         self.display(self._data)
+
+    def _toggle_marked_rows(self, value):
+        for row in self._selected_rows:
+            self._query_results[row]["selected"] = value
+            self._sheet.click_checkbox(f"A{row + 1}", checked=value)
 
 
