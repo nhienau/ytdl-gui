@@ -49,6 +49,7 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self._sheet.extra_bindings(["cell_select", "drag_select_cells"], func=lambda e: self._on_cell_selected(e))
         self._sheet.extra_bindings("deselect", func=lambda e: self._on_cell_deselected(e))
         self._sheet.extra_bindings("shift_cell_select", func=lambda e: self._on_shift_cell_selected(e))
+        self._sheet.extra_bindings(["row_select", "drag_select_rows"], func=lambda e: self._on_row_selected(e))
         self._sheet.popup_menu_add_command("Select marked URLs", lambda: self._toggle_marked_rows(True), empty_space_menu=False)
         self._sheet.popup_menu_add_command("Deselect marked URLs", lambda: self._toggle_marked_rows(False), empty_space_menu=False)
         self._sheet.popup_menu_add_command("Select all URLs", lambda: self._toggle_all_checkboxes(True), empty_space_menu=False)
@@ -94,17 +95,13 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self.display(self._data)
 
     def _on_entry_checked(self, e):
-        print("[Checkbox] Selection boxes:", e["selection_boxes"])
-        print("[Checkbox] Selected:", e["selected"])
-        print("[Checkbox] Being selected: ", e["being_selected"])
-        print("[Checkbox] Selected rows: ", self._selected_rows)
-
         index = e["selected"][0]
         self._query_results[index]["selected"] = e["value"]
-        for row in self._selected_rows:
-            if row != index:
-                self._sheet.click_checkbox(checked=e["value"], redraw=False)
-                self._query_results[row]["selected"] = e["value"]
+        currently_selected = self._sheet.get_currently_selected()
+        row = currently_selected.row
+        self._sheet.add_row_selection(row=row, redraw=False, run_binding_func=False)
+        self._last_selected_row = row
+        self._selected_rows.append(row)
 
     def _toggle_all_checkboxes(self, value):
         for entry in self._query_results:
@@ -112,21 +109,16 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self._sheet.click_checkbox("A", checked=value)
 
     def _on_cell_selected(self, e):
-        print("[Cell, before] Selection boxes:", e["selection_boxes"])
-        print("[Cell, before] Selected:", e["selected"])
-        print("[Cell, before] Being selected: ", e["being_selected"])
-        print("[Cell, before] Selected rows: ", self._selected_rows)
         currently_selected = self._sheet.get_currently_selected()
         row = currently_selected.row
         column = currently_selected.column
         
         # Deselect row if selected
         if self._sheet.row_selected(row):
-            self._selecting = True
             self._sheet.deselect(row=row, redraw=False)
             self._sheet.deselect(cell=(row, column), redraw=True)
-            self._selecting = False
-            self._selected_rows.remove(row)
+            if row in self._selected_rows:
+                self._selected_rows.remove(row)
             # Store last selected row (for shift select)
             currently_selected = self._sheet.get_currently_selected()
             self._last_selected_row = None if len(currently_selected) == 0 else currently_selected.row
@@ -137,50 +129,27 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
             return
         
         # Select row
-        self._selecting = True
         self._sheet.deselect(cell=(row, column), redraw=False)
-        self._selecting = False
         self._sheet.add_row_selection(row=row, redraw=False, run_binding_func=False)
         self._last_selected_row = row
         self._selected_rows.append(row)
-        print("[Cell, after] Selection boxes:", e["selection_boxes"])
-        print("[Cell, after] Selected:", e["selected"])
-        print("[Cell, after] Being selected: ", e["being_selected"])
-        print("[Cell, after] Selected rows: ", self._selected_rows)
             
     def _on_cell_deselected(self, e):
-        print(e)
-        print("[Deselected] Selection boxes:", e["selection_boxes"])
-        print("[Deselected] Selected:", e["selected"])
-        print("[Deselected] Being selected: ", e["being_selected"])
-        print("[Deselected] Selected rows: ", self._selected_rows)
         if e["selection_boxes"] == {}:
-            print("[Deselected] Selected_boxes empty")
             self._selected_rows.clear()
-            return
-        elif self._selecting is True:
-            print("[Deselected] Selecting..")
             return
 
     def _on_shift_cell_selected(self, e):
-        print("[Shift, before] Selection boxes:", e["selection_boxes"])
-        print("[Shift, before] Selected:", e["selected"])
-        print("[Shift, before] Being selected: ", e["being_selected"])
-        print("[Shift, before] Selected rows: ", self._selected_rows)
         currently_selected = self._sheet.get_currently_selected()
         row = currently_selected.row
         column = currently_selected.column
         r1 = min(row, self._last_selected_row)
         r2 = max(row, self._last_selected_row)
-
-        self._selecting = True
         self._sheet.deselect(cell=(row, column), redraw=False)
-        self._selecting = False
         for r in range(r1, r2 + 1):
             self._sheet.add_row_selection(row=r, redraw=False, run_binding_func=False)
 
         self._selected_rows = [row for row in range(r1, r2 + 1)]
-        print("[Shift, after] Selected rows: ", self._selected_rows)
         
     def clear_entries(self):
         self._data = []
@@ -195,4 +164,7 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
             self._query_results[row]["selected"] = value
             self._sheet.click_checkbox(f"A{row + 1}", checked=value)
 
+    def _on_row_selected(self, e):
+        for row in self._sheet.get_selected_rows():
+            self._selected_rows.append(row)
 
