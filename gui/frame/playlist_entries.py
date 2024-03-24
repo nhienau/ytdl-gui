@@ -12,7 +12,7 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self._data = []
         self._query = ""
         self._query_results = []
-        
+
         self._search_entry_var = ctk.StringVar(value="")
         self._entry_search = ctk.CTkEntry(self, textvariable=self._search_entry_var)
         self._entry_search.grid(row=0, column=0, padx=(10, 0), pady=10, sticky="ew", columnspan=5)
@@ -30,8 +30,8 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self._button_select_all = ctk.CTkButton(self, text="Select all", width=24, command=lambda: self._toggle_all_checkboxes(True))
         self._button_select_all.grid(row=0, column=18, pady=10, sticky="ew")
 
-        self._button_unselect_all = ctk.CTkButton(self, text="Unselect all", width=24, command=lambda: self._toggle_all_checkboxes(False))
-        self._button_unselect_all.grid(row=0, column=19, padx=(5, 10), pady=10, sticky="ew")
+        self._button_deselect_all = ctk.CTkButton(self, text="Deselect all", width=24, command=lambda: self._toggle_all_checkboxes(False))
+        self._button_deselect_all.grid(row=0, column=19, padx=(5, 10), pady=10, sticky="ew")
 
         self._sheet = Sheet(self, data = data)
         self._sheet.headers([" ", "Title", "Uploader", "Duration", "URL"])
@@ -42,9 +42,18 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         for x in range(2, 5):
             self._sheet.column_width(x, width=110)
 
-        self._sheet.enable_bindings("single_select", "row_select", "drag_select", "ctrl_select", "column_width_resize", "double_click_column_resize", "rc_select", "arrowkeys", "up", "down")
-        self._sheet.extra_bindings(["cell_select", "drag_select_cells", "ctrl_select",  "shift_cell_select"], func=lambda e: self._on_cell_selected(e))
-        # self._sheet.extra_bindings("all_select_events", func=lambda e: self._on_cell_selected(e))
+        self._selecting = False
+        self._last_selected_row = None
+        self._selected_rows = []
+        self._sheet.enable_bindings("single_select", "row_select", "drag_select", "ctrl_select", "column_width_resize", "double_click_column_resize", "right_click_popup_menu", "arrowkeys", "up", "down")
+        self._sheet.extra_bindings(["cell_select", "drag_select_cells"], func=lambda e: self._on_cell_selected(e))
+        self._sheet.extra_bindings("deselect", func=lambda e: self._on_cell_deselected(e))
+        self._sheet.extra_bindings("shift_cell_select", func=lambda e: self._on_shift_cell_selected(e))
+        self._sheet.extra_bindings(["row_select", "drag_select_rows"], func=lambda e: self._on_row_selected(e))
+        self._sheet.popup_menu_add_command("Select marked URLs", lambda: self._toggle_marked_rows(True), empty_space_menu=False)
+        self._sheet.popup_menu_add_command("Deselect marked URLs", lambda: self._toggle_marked_rows(False), empty_space_menu=False)
+        self._sheet.popup_menu_add_command("Select all URLs", lambda: self._toggle_all_checkboxes(True), empty_space_menu=False)
+        self._sheet.popup_menu_add_command("Deselect all URLs", lambda: self._toggle_all_checkboxes(False), empty_space_menu=False)
         self._sheet.grid(row = 1, column = 0, sticky = "nswe", columnspan=20, padx=10, pady=(0, 10))
 
     def set_data(self, data):
@@ -88,6 +97,11 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
     def _on_entry_checked(self, e):
         index = e["selected"][0]
         self._query_results[index]["selected"] = e["value"]
+        currently_selected = self._sheet.get_currently_selected()
+        row = currently_selected.row
+        self._sheet.add_row_selection(row=row, redraw=False, run_binding_func=False)
+        self._last_selected_row = row
+        self._selected_rows.append(row)
 
     def _toggle_all_checkboxes(self, value):
         for entry in self._query_results:
@@ -95,23 +109,48 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self._sheet.click_checkbox("A", checked=value)
 
     def _on_cell_selected(self, e):
-        # print(e)
         currently_selected = self._sheet.get_currently_selected()
         row = currently_selected.row
         column = currently_selected.column
         
+        # Deselect row if selected
+        if self._sheet.row_selected(row):
+            self._sheet.deselect(row=row, redraw=False)
+            self._sheet.deselect(cell=(row, column), redraw=True)
+            if row in self._selected_rows:
+                self._selected_rows.remove(row)
+            # Store last selected row (for shift select)
+            currently_selected = self._sheet.get_currently_selected()
+            self._last_selected_row = None if len(currently_selected) == 0 else currently_selected.row
+            return
+        
+        # Skip if selected on checkbox cell
         if column == 0:
             return
         
-        self._sheet.add_row_selection(row=row, redraw=False)
-
-        # try:
-            # self._sheet.create_selection_box(r1=row, c1=0, r2=row + 1, c2=5)
-            # self._sheet.select_row(row)
-            # self._sheet.deselect(row, column)
-        # except:
-        #     print("Error")
+        # Select row
+        self._sheet.deselect(cell=(row, column), redraw=False)
+        self._sheet.add_row_selection(row=row, redraw=False, run_binding_func=False)
+        self._last_selected_row = row
+        self._selected_rows.append(row)
             
+    def _on_cell_deselected(self, e):
+        if e["selection_boxes"] == {}:
+            self._selected_rows.clear()
+            return
+
+    def _on_shift_cell_selected(self, e):
+        currently_selected = self._sheet.get_currently_selected()
+        row = currently_selected.row
+        column = currently_selected.column
+        r1 = min(row, self._last_selected_row)
+        r2 = max(row, self._last_selected_row)
+        self._sheet.deselect(cell=(row, column), redraw=False)
+        for r in range(r1, r2 + 1):
+            self._sheet.add_row_selection(row=r, redraw=False, run_binding_func=False)
+
+        self._selected_rows = [row for row in range(r1, r2 + 1)]
+        
     def clear_entries(self):
         self._data = []
         self._query = ""
@@ -120,4 +159,12 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self._button_clear_input.grid_forget()
         self.display(self._data)
 
+    def _toggle_marked_rows(self, value):
+        for row in self._selected_rows:
+            self._query_results[row]["selected"] = value
+            self._sheet.click_checkbox(f"A{row + 1}", checked=value)
+
+    def _on_row_selected(self, e):
+        for row in self._sheet.get_selected_rows():
+            self._selected_rows.append(row)
 
