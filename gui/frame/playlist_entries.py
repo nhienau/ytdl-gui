@@ -11,7 +11,7 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=1)
         self._data = []
         self._query = ""
-        self._query_results = []
+        self._query_results = self._data
 
         self._search_entry_var = ctk.StringVar(value="")
         self._entry_search = ctk.CTkEntry(self, textvariable=self._search_entry_var)
@@ -56,15 +56,16 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self._sheet.popup_menu_add_command("Deselect all URLs", lambda: self._toggle_all_checkboxes(False), empty_space_menu=False)
         self._sheet.grid(row = 1, column = 0, sticky = "nswe", columnspan=20, padx=10, pady=(0, 10))
 
-    def set_data(self, data):
-        self._data = data
-        self._query_results = self._data
-
-    def get_data(self):
+    @property
+    def data(self):
         return self._data
 
+    @data.setter
+    def data(self, data):
+        self._data = data
+
     def display(self, data):
-        list_to_display = list(map(lambda entry: [entry["selected"], entry["title"], entry["uploader"], to_duration_string(entry["duration"]), entry["url"]], data))
+        list_to_display = [[entry["selected"], entry["title"], entry["uploader"], to_duration_string(entry["duration"]), entry["url"]] for entry in data]
         currently_selected = self._sheet.get_currently_selected()
         if currently_selected:
             row = currently_selected.row
@@ -167,4 +168,5 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
     def _on_row_selected(self, e):
         for row in self._sheet.get_selected_rows():
             self._selected_rows.append(row)
+
 

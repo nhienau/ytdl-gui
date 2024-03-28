@@ -55,7 +55,12 @@ class VideoInfoFrame(ctk.CTkFrame):
         self._button_add = ctk.CTkButton(self, text="Add", command=self._on_add_url)
         self._button_add.grid(row=6, column=2, padx=10, pady=(0, 10), sticky="w")
 
-    def set_data(self, data):
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data):
         self._data = data
 
     def display(self, data):

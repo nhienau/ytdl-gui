@@ -53,7 +53,12 @@ class PlaylistDetailFrame(ctk.CTkScrollableFrame):
 
         self._button_cancel_add = ctk.CTkButton(self, text="Cancel", width=24, command=self.hide_confirm_message)
     
-    def set_data(self, data):
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data):
         self._data = data
 
     def display(self, data):

@@ -12,7 +12,7 @@ class TableFrame(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=1)
         self._data = data
         self._query = ""
-        self._query_results = []
+        self._query_results = self._data
 
         # self._search_entry_var = ctk.StringVar(value="")
         # self._entry_search = ctk.CTkEntry(self, textvariable=self._search_entry_var)
@@ -64,7 +64,7 @@ class TableFrame(ctk.CTkFrame):
         self._sheet.grid(row = 1, column = 0, sticky = "nswe", columnspan=20, padx=10, pady=(0, 10))
     
     def display(self, data, deselect = True, redraw = True):
-        list_to_display = list(map(lambda entry: [entry["selected"], entry["title"], entry.get("webpage_url") or entry.get("url"), "", "", "", "", "", "", "", "", ""], data))
+        list_to_display = [[entry["selected"], entry["title"], entry.get("webpage_url") or entry.get("url"), "", "", "", "", "", "", "", "", ""] for entry in data]
         if deselect is True:
             currently_selected = self._sheet.get_currently_selected()
             if currently_selected:
@@ -73,10 +73,14 @@ class TableFrame(ctk.CTkFrame):
                 self._sheet.deselect(row, column)
         self._sheet.set_sheet_data(data=list_to_display, reset_col_positions=False, redraw=redraw)
 
-    def set_data(self, data):
-        self._data = data
-        self._query_results = self._data
+    @property
+    def data(self):
+        return self._data
 
+    @data.setter
+    def data(self, data):
+        self._data = data
+    
     def _handle_search(self):
         query = self._search_entry_var.get().strip()
         if query == self._query:
@@ -239,7 +243,7 @@ class TableFrame(ctk.CTkFrame):
         for i in self._selected_rows:
             self._sheet.deselect(row=i, redraw=False)
         self._data.clear()
-        self._query_results = new_list
+        self._query_results = self._data
         self.display(data=self._query_results, deselect=False, redraw=True)
         self._last_selected_row = None
 

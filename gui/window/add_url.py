@@ -134,12 +134,12 @@ class AddUrlWindow(ctk.CTkToplevel):
         if "entries" in result:
             # Result is a playlist, show playlist info frame
             self._playlist_info_frame.grid(row=5, column=0, sticky="nswe", columnspan=20)
-            self._playlist_info_frame.set_data(result)
+            self._playlist_info_frame.data = result
             self._playlist_info_frame.display(result)
         else:
             # Show video info frame
             self._video_info_frame.grid(row=4, column=6, sticky="we", pady=(10, 10), columnspan=10)
-            self._video_info_frame.set_data(result)
+            self._video_info_frame.data = result
             self._video_info_frame.display(result)
 
     def on_cookies_submit(self):
