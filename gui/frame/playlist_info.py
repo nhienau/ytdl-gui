@@ -38,7 +38,7 @@ class PlaylistInfoFrame(ctk.CTkFrame):
         for entry in data["entries"]:
             entry["selected"] = True
 
-        data["entries"] = list(filter(lambda entry: entry["uploader"] is not None, data["entries"]))
+        data["entries"] = list(filter(lambda entry: entry["view_count"] is not None, data["entries"]))
         data["available_count"] = len(data["entries"])
 
         self._data = data

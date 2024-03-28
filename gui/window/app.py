@@ -31,7 +31,7 @@ class App(ctk.CTk):
         len_before_add = len(self._data)
         self._data += entries
         added = len(self._data) - len_before_add
-        # print(self._data)
+        self._table_frame.set_data(self._data)
         self._table_frame.display(self._data)
         return {
             "added": added,

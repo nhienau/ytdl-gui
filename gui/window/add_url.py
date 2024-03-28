@@ -128,7 +128,6 @@ class AddUrlWindow(ctk.CTkToplevel):
     def _handle_result(self, result, cookies_from_browser = ""):
         self._hide_message()
         self._entry_var.set("")
-        print(result["title"])
 
         result["cookies"] = cookies_from_browser
 
