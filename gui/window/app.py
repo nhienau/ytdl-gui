@@ -21,7 +21,7 @@ class App(ctk.CTk):
         self._settings_frame.grid(row=1, column=0, padx=(10, 5), pady=(5, 10), sticky="nswe", columnspan=4)
 
         self._table_frame = TableFrame(self, data=self._data)
-        self._table_frame.grid(row=1, column=4, padx=(5, 10), pady=10, sticky="nswe", columnspan=16)
+        self._table_frame.grid(row=1, column=4, padx=(5, 10), pady=(5, 10), sticky="nswe", columnspan=16)
         self._table_frame.display(self._data)
 
     def on_add_urls(self, entries):

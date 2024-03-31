@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from PIL import Image
 from tksheet import Sheet
+import json
 
 from helper.datetime import to_duration_string
 
@@ -63,6 +64,7 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
     @data.setter
     def data(self, data):
         self._data = data
+        self._query_results = data
 
     def display(self, data):
         list_to_display = [[entry["selected"], entry["title"], entry["uploader"], to_duration_string(entry["duration"]), entry["url"]] for entry in data]
@@ -72,6 +74,8 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
             column = currently_selected.column
             self._sheet.deselect(row, column)
         self._sheet.set_sheet_data(data=list_to_display, reset_col_positions=False)
+        with open("test.json", "w") as f:
+            f.write(json.dumps(data))
 
     def _handle_search(self):
         query = self._search_entry_var.get().strip()

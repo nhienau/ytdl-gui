@@ -13,8 +13,13 @@ class ControlFrame(ctk.CTkFrame):
 
         self._icon_add = ctk.CTkImage(light_image=Image.open("gui/icons/add.png"), dark_image=Image.open("gui/icons/add.png"), size=(32, 32))
 
-        self._button_add_url = ctk.CTkButton(self, image=self._icon_add, text="", width=32, fg_color="transparent", anchor="center", command=self._on_add_url_click)
+        self._button_add_url = ctk.CTkButton(self, image=self._icon_add, text="", width=32, fg_color="transparent", hover_color="#EBEBEB", anchor="center", command=self._on_add_url_click)
         self._button_add_url.grid(row=0, column=0)
+
+        self._icon_download = ctk.CTkImage(light_image=Image.open("gui/icons/download.png"), dark_image=Image.open("gui/icons/download.png"), size=(32, 32))
+
+        self._button_download = ctk.CTkButton(self, image=self._icon_download, text="", width=32, fg_color="transparent", hover_color="#EBEBEB", anchor="center")
+        self._button_download.grid(row=0, column=1)
 
     def _on_add_url_click(self):
         if self._toplevel_window is None or not self._toplevel_window.winfo_exists():
