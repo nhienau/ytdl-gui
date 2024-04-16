@@ -7,6 +7,7 @@ class VideoInfoFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self._parent = master
+        self._root_data = master._root_data
         self.grid_columnconfigure((1), weight=1)
         self._data = {}
 
@@ -62,6 +63,14 @@ class VideoInfoFrame(ctk.CTkFrame):
     @data.setter
     def data(self, data):
         self._data = data
+    
+    @property
+    def root_data(self):
+        return self._root_data
+
+    @root_data.setter
+    def root_data(self, root_data):
+        self._root_data = root_data
 
     def display(self, data):
         set_textbox_value(self._textbox_title, data["title"])
@@ -71,7 +80,7 @@ class VideoInfoFrame(ctk.CTkFrame):
         set_textbox_value(self._textbox_url, data["original_url"])
         set_textbox_value(self._textbox_resolution, data["resolution"])
 
-    def clear_text(self):
+    def clear_video_info(self):
         set_textbox_value(self._textbox_title, "")
         set_textbox_value(self._textbox_uploader, "")
         set_textbox_value(self._textbox_upload_date_value, "")
@@ -92,16 +101,16 @@ class VideoInfoFrame(ctk.CTkFrame):
             "cookies": self._data["cookies"],
             "selected": True,
         }
-        on_add_urls = self._parent.callbacks["on_add_urls"]
-        result = on_add_urls([data])
+        result = self.root_data.on_add_urls([data])
 
         if result["added"] == 1:
             message = f"Successfully added \"{data['title']}\"."
         else:
             message = f"\"{data['title']}\" has already been added."
         
-        self._parent.on_add_urls_callback(message)
-        self.clear_text()
+        set_textbox_value(self._parent._textbox_message, message)
+        self._parent._show_message()
+        self.clear_video_info()
         self.grid_forget()
         
 

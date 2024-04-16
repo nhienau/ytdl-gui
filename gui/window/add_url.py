@@ -16,11 +16,12 @@ class AddUrlWindow(ctk.CTkToplevel):
         self.geometry("1024x576")
         self.grid_columnconfigure(tuple([val for val in range(0, 20)]), weight=1)
         self.grid_rowconfigure(5, weight=1)
+        self._root_data = list(args)[0]._parent
+
         self._async_loop = asyncio.get_event_loop()
         self._thread = None
         self._stop_event = threading.Event()
         self._cookies_from_browser = ""
-        self.callbacks = {}
 
         self._label_url = ctk.CTkLabel(self, text="URL")
         self._label_url.grid(row=0, column=1, pady=(10, 10), sticky="e")
@@ -44,6 +45,14 @@ class AddUrlWindow(ctk.CTkToplevel):
         self._playlist_info_frame = PlaylistInfoFrame(self)
 
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    @property
+    def root_data(self):
+        return self._root_data
+
+    @root_data.setter
+    def root_data(self, root_data):
+        self._root_data = root_data
 
     def _show_message(self):
         self._textbox_message.grid(row=2, column=2, pady=(0, 10), sticky="we", columnspan=16)
@@ -154,11 +163,4 @@ class AddUrlWindow(ctk.CTkToplevel):
         self._stop_event.set()
         self.destroy()
 
-    def add_callbacks(self, callbacks):
-        self.callbacks.update(callbacks)
-
-    def on_add_urls_callback(self, message):
-        set_textbox_value(self._textbox_message, message)
-        self._show_message()
-        
 

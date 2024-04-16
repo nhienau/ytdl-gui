@@ -7,9 +7,6 @@ class ControlFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self._parent = master
-        self.callbacks = {
-            "on_add_urls": master.on_add_urls,
-        }
 
         self._icon_add = ctk.CTkImage(light_image=Image.open("gui/icons/add.png"), dark_image=Image.open("gui/icons/add.png"), size=(32, 32))
 
@@ -27,7 +24,6 @@ class ControlFrame(ctk.CTkFrame):
     def _on_add_url_click(self):
         if self._parent.toplevel_window is None or not self._parent.toplevel_window.winfo_exists():
             self._parent.toplevel_window = AddUrlWindow(self)
-            self._parent.toplevel_window.add_callbacks(self.callbacks)
         else:
             self._parent.toplevel_window.focus()
             self._parent.toplevel_window.lift()

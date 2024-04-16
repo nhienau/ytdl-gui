@@ -5,7 +5,6 @@ class PresetButtonsFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.configure(fg_color="transparent")
-        self.callbacks = {}
 
         self._icon_save = ctk.CTkImage(light_image=Image.open("gui/icons/save.png"), dark_image=Image.open("gui/icons/save.png"), size=(24, 24))
 

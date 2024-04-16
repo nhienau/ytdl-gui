@@ -8,7 +8,8 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.grid_columnconfigure((1), weight=1)
-        self._preset = master.current_preset
+        self._root_data = master.root_data
+        self._preset = master.root_data.current_preset
 
         self._label_preset = ctk.CTkLabel(self, text="Preset")
         self._label_preset.grid(row=0, column=0, pady=(0, 10), sticky="nsw")
@@ -89,6 +90,16 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
 
         # Button save
 
+        self.display(self.root_data.current_preset)
+
+    @property
+    def root_data(self):
+        return self._root_data
+
+    @root_data.setter
+    def root_data(self, root_data):
+        self._root_data = root_data
+
     @property
     def preset(self):
         return self._preset
@@ -96,7 +107,7 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
     @preset.setter
     def preset(self, preset):
         self._preset = preset
-        self.set_preset_values(self._preset)
+        self.display(self._preset)
 
     def _get_form_data(self):
         data = {
@@ -105,7 +116,7 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
         }
         print(data)
 
-    def set_preset_values(self, preset):
+    def display(self, preset):
         self._var_preset_name.set(preset["name"])
         if preset["include_video"] and preset["include_audio"]:
             self._combobox_download_option.set("Video + audio")

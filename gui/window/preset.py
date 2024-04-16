@@ -12,11 +12,9 @@ class PresetWindow(ctk.CTkToplevel):
         self.resizable(width=False, height=False)
         self.grid_columnconfigure(tuple([val for val in range(0, 20)]), weight=1)
         self.grid_rowconfigure(0, weight=1)
-        self._parent = list(args)[0]
-        self._preset = []
-        self._current_preset = {}
+        self._root_data = list(args)[0]._parent
 
-        self._preset_table_frame = PresetTableFrame(self, data=self._preset)
+        self._preset_table_frame = PresetTableFrame(self)
         self._preset_table_frame.grid(row = 0, column = 0, sticky = "nswe", columnspan = 5, padx = 10, pady = 10)
 
         self._preset_detail_frame = PresetDetailFrame(self)
@@ -26,29 +24,14 @@ class PresetWindow(ctk.CTkToplevel):
         self._button_confirm_choose_preset.grid(row = 1, column=19, sticky="e", padx = (0, 10), pady = (0, 10))
 
     @property
-    def parent(self):
-        return self._parent
+    def root_data(self):
+        return self._root_data
 
-    @parent.setter
-    def parent(self, parent):
-        self._parent = parent
+    @root_data.setter
+    def root_data(self, root_data):
+        self._root_data = root_data
 
-    @property
-    def preset(self):
-        return self._preset
-
-    @preset.setter
-    def preset(self, preset):
-        self._preset = preset
-        self._preset_table_frame.data = self._preset
-
-    @property
-    def current_preset(self):
-        return self._current_preset
-
-    @current_preset.setter
-    def current_preset(self, current_preset):
-        self._current_preset = current_preset
-        self._preset_detail_frame.preset = self._current_preset
-
-
+    def on_table_cell_selected(self, e):
+        currently_selected = self._preset_table_frame._sheet.get_currently_selected()
+        row = currently_selected.row
+        self._preset_detail_frame.preset = self.root_data.preset[row]

@@ -7,11 +7,11 @@ from helper.datetime import to_duration_string
 from helper.gui import move_rows_up, move_rows_down, move_rows_to_top, move_rows_to_bottom
 
 class TableFrame(ctk.CTkFrame):
-    def __init__(self, master, data):
+    def __init__(self, master):
         super().__init__(master)
         self.grid_columnconfigure(tuple([val for val in range(0, 20)]), weight=1)
         self.grid_rowconfigure(1, weight=1)
-        self._data = data
+        self._parent = master
 
         self._table_buttons_frame = TableButtonsFrame(self)
 
@@ -49,6 +49,8 @@ class TableFrame(ctk.CTkFrame):
         self._sheet.popup_menu_add_command("Delete marked URLs", lambda: self.delete_marked_rows(), empty_space_menu=False)
         self._sheet.popup_menu_add_command("Delete all URLs", lambda: self.clear_list(), empty_space_menu=False)
         self._sheet.grid(row = 1, column = 0, sticky = "nswe", columnspan=20, padx=10, pady=(0, 10))
+
+        self.display(self.parent.download_list)
     
     def display(self, data, deselect = True, redraw = True):
         list_to_display = [[entry["selected"], entry["title"], entry.get("webpage_url") or entry.get("url"), "", "", "", "", "", "", "", "", ""] for entry in data]
@@ -59,9 +61,9 @@ class TableFrame(ctk.CTkFrame):
                 column = currently_selected.column
                 self._sheet.deselect(row, column)
         self._sheet.set_sheet_data(data=list_to_display, reset_col_positions=False, redraw=redraw)
-        self._button_select_all.configure(state="disabled" if len(self._data) == 0 else "normal")
-        self._button_deselect_all.configure(state="disabled" if len(self._data) == 0 else "normal")
-        if len(self._data) == 0:
+        self._button_select_all.configure(state="disabled" if len(self.parent.download_list) == 0 else "normal")
+        self._button_deselect_all.configure(state="disabled" if len(self.parent.download_list) == 0 else "normal")
+        if len(self.parent.download_list) == 0:
             self._table_buttons_frame.set_buttons_state("disabled")
             self._table_buttons_frame.grid_forget()
             self._set_buttons_state("disabled")
@@ -69,16 +71,16 @@ class TableFrame(ctk.CTkFrame):
             self._table_buttons_frame.grid(row=0, column=0, padx=(10, 0), sticky="w")
 
     @property
-    def data(self):
-        return self._data
+    def parent(self):
+        return self._parent
 
-    @data.setter
-    def data(self, data):
-        self._data = data
+    @parent.setter
+    def parent(self, parent):
+        self._parent = parent
 
     def _on_entry_checked(self, e):
         index = e["selected"][0]
-        self._data[index]["selected"] = e["value"]
+        self.parent.download_list[index]["selected"] = e["value"]
         currently_selected = self._sheet.get_currently_selected()
         row = currently_selected.row
         self._sheet.add_row_selection(row=row, redraw=False, run_binding_func=False)
@@ -87,7 +89,7 @@ class TableFrame(ctk.CTkFrame):
         self._table_buttons_frame.set_buttons_state("normal")
 
     def _toggle_all_checkboxes(self, value):
-        for entry in self._data:
+        for entry in self.parent.download_list:
             entry["selected"] = value
         self._sheet.click_checkbox("A", checked=value)
 
@@ -140,7 +142,7 @@ class TableFrame(ctk.CTkFrame):
 
     def _toggle_marked_rows(self, value):
         for row in self._selected_rows:
-            self._data[row]["selected"] = value
+            self.parent.download_list[row]["selected"] = value
             self._sheet.click_checkbox(f"A{row + 1}", checked=value)
 
     def _on_row_selected(self, e):
@@ -151,19 +153,19 @@ class TableFrame(ctk.CTkFrame):
 
     def move_rows_up(self):
         currently_selected = self._sheet.get_currently_selected()
-        if not currently_selected or len(self._data) == 1:
+        if not currently_selected or len(self.parent.download_list) == 1:
             return
 
-        new_list, new_selected_rows = move_rows_up(self._data.copy(), self._selected_rows.copy())
+        new_list, new_selected_rows = move_rows_up(self.parent.download_list.copy(), self._selected_rows.copy())
         for i in sorted(self._selected_rows):
             self._sheet.deselect(row=i, redraw=False)
             if i == 0:
-                self._sheet.add_row_selection(row=len(self._data) - 1, redraw=False, run_binding_func=False)
+                self._sheet.add_row_selection(row=len(self.parent.download_list) - 1, redraw=False, run_binding_func=False)
             else:
                 self._sheet.add_row_selection(row=i - 1, redraw=False, run_binding_func=False)
 
-        self._data = new_list
-        self.display(data=self._data, deselect=False, redraw=True)
+        self.parent.download_list = new_list
+        self.display(data=self.parent.download_list, deselect=False, redraw=True)
         self._selected_rows = new_selected_rows
         self._last_selected_row = self._selected_rows[-1]
         self._sheet.set_currently_selected(row=self._last_selected_row)
@@ -171,19 +173,19 @@ class TableFrame(ctk.CTkFrame):
 
     def move_rows_down(self):
         currently_selected = self._sheet.get_currently_selected()
-        if not currently_selected or len(self._data) == 1:
+        if not currently_selected or len(self.parent.download_list) == 1:
             return
 
-        new_list, new_selected_rows = move_rows_down(self._data.copy(), self._selected_rows.copy())
+        new_list, new_selected_rows = move_rows_down(self.parent.download_list.copy(), self._selected_rows.copy())
         for i in sorted(self._selected_rows, reverse=True):
             self._sheet.deselect(row=i, redraw=False)
-            if i == len(self._data) - 1:
+            if i == len(self.parent.download_list) - 1:
                 self._sheet.add_row_selection(row=0, redraw=False, run_binding_func=False)
             else:
                 self._sheet.add_row_selection(row=i + 1, redraw=False, run_binding_func=False)
 
-        self._data = new_list
-        self.display(data=self._data, deselect=False, redraw=True)
+        self.parent.download_list = new_list
+        self.display(data=self.parent.download_list, deselect=False, redraw=True)
         self._selected_rows = new_selected_rows
         self._last_selected_row = self._selected_rows[-1]
         self._sheet.set_currently_selected(row=self._last_selected_row)
@@ -191,16 +193,16 @@ class TableFrame(ctk.CTkFrame):
 
     def move_rows_to_top(self):
         currently_selected = self._sheet.get_currently_selected()
-        if not currently_selected or len(self._data) == 1:
+        if not currently_selected or len(self.parent.download_list) == 1:
             return
 
-        new_list, new_selected_rows = move_rows_to_top(self._data.copy(), self._selected_rows.copy())
+        new_list, new_selected_rows = move_rows_to_top(self.parent.download_list.copy(), self._selected_rows.copy())
         for i in sorted(self._selected_rows):
             self._sheet.deselect(row=i, redraw=False)
         for i in sorted(new_selected_rows):
             self._sheet.add_row_selection(row=i, redraw=False, run_binding_func=False)
-        self._data = new_list
-        self.display(data=self._data, deselect=False, redraw=True)
+        self.parent.download_list = new_list
+        self.display(data=self.parent.download_list, deselect=False, redraw=True)
         self._selected_rows = new_selected_rows
         self._last_selected_row = self._selected_rows[-1]
         self._sheet.set_currently_selected(row=self._last_selected_row)
@@ -208,16 +210,16 @@ class TableFrame(ctk.CTkFrame):
         
     def move_rows_to_bottom(self):
         currently_selected = self._sheet.get_currently_selected()
-        if not currently_selected or len(self._data) == 1:
+        if not currently_selected or len(self.parent.download_list) == 1:
             return
 
-        new_list, new_selected_rows = move_rows_to_bottom(self._data.copy(), self._selected_rows.copy())
+        new_list, new_selected_rows = move_rows_to_bottom(self.parent.download_list.copy(), self._selected_rows.copy())
         for i in sorted(self._selected_rows):
             self._sheet.deselect(row=i, redraw=False)
         for i in sorted(new_selected_rows):
             self._sheet.add_row_selection(row=i, redraw=False, run_binding_func=False)
-        self._data = new_list
-        self.display(data=self._data, deselect=False, redraw=True)
+        self.parent.download_list = new_list
+        self.display(data=self.parent.download_list, deselect=False, redraw=True)
         self._selected_rows = new_selected_rows
         self._last_selected_row = self._selected_rows[-1]
         self._sheet.set_currently_selected(row=self._last_selected_row)
@@ -227,11 +229,11 @@ class TableFrame(ctk.CTkFrame):
         currently_selected = self._sheet.get_currently_selected()
         if not currently_selected:
             return
-        new_list = [el for i, el in enumerate(self._data) if i not in self._selected_rows]
+        new_list = [el for i, el in enumerate(self.parent.download_list) if i not in self._selected_rows]
         for i in self._selected_rows:
             self._sheet.deselect(row=i, redraw=False)
-        self._data = new_list
-        self.display(data=self._data, deselect=False, redraw=True)
+        self.parent.download_list = new_list
+        self.display(data=self.parent.download_list, deselect=False, redraw=True)
         self._last_selected_row = None
 
         currently_selected = self._sheet.get_currently_selected()
@@ -239,7 +241,7 @@ class TableFrame(ctk.CTkFrame):
             row = currently_selected.row
             self._sheet.deselect(cell=(row, 0), redraw=True)
 
-        if len(self._data) == 0:
+        if len(self.parent.download_list) == 0:
             self._table_buttons_frame.set_buttons_state("disabled")
             self._table_buttons_frame.grid_forget()
             self._set_buttons_state("disabled")
@@ -249,9 +251,8 @@ class TableFrame(ctk.CTkFrame):
     def clear_list(self):
         for i in self._selected_rows:
             self._sheet.deselect(row=i, redraw=False)
-        self._data.clear()
-        self._data = self._data
-        self.display(data=self._data, deselect=False, redraw=True)
+        self.parent.download_list.clear()
+        self.display(data=self.parent.download_list, deselect=False, redraw=True)
         self._last_selected_row = None
         
         self._table_buttons_frame.set_buttons_state("disabled")

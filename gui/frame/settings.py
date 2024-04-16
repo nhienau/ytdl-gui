@@ -146,9 +146,6 @@ class SettingsFrame(ctk.CTkScrollableFrame):
     def _on_choose_preset(self):
         if self._parent.toplevel_window is None or not self._parent.toplevel_window.winfo_exists():
             self._parent.toplevel_window = PresetWindow(self)
-            self._parent.toplevel_window.preset = self._parent.preset
-            self._parent.toplevel_window.current_preset = self._current_preset
-            self._parent.toplevel_window.parent = self._parent
         else:
             self._parent.toplevel_window.focus()
             self._parent.toplevel_window.lift()

@@ -8,10 +8,10 @@ from helper.datetime import to_duration_string
 class PlaylistInfoFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self._parent = master
         self.configure(fg_color="transparent")
         self.grid_columnconfigure(tuple([val for val in range(0, 20)]), weight=1)
         self.grid_rowconfigure(0, weight=1)
+        self._root_data = master._root_data
         self._data = {}
 
         self._detail_frame = PlaylistDetailFrame(self)
@@ -19,6 +19,14 @@ class PlaylistInfoFrame(ctk.CTkFrame):
 
         self._entries_table = PlaylistEntriesFrame(self, data=[])
         self._entries_table.grid(row=0, column=4, padx=(5, 10), pady=10, sticky="nswe", columnspan=16)
+
+    @property
+    def root_data(self):
+        return self._root_data
+
+    @root_data.setter
+    def root_data(self, root_data):
+        self._root_data = root_data
 
     @property
     def data(self):
@@ -80,8 +88,7 @@ class PlaylistInfoFrame(ctk.CTkFrame):
             "cookies": self._data["cookies"],
             "selected": True,
         }, data))
-        on_add_urls = self._parent.callbacks["on_add_urls"]
-        result = on_add_urls(data)
+        result = self.root_data.on_add_urls(data)
         message = f"Successfully added {result['added']} video{'' if result['added'] == 1 else 's'}."
         self._detail_frame.show_additional_message(message)
         self._detail_frame.hide_confirm_message()
