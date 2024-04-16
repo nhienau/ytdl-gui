@@ -1,0 +1,41 @@
+[
+  {
+    "name": "Best",
+    "include_video": true,
+    "include_audio": true,
+    "split_video_and_audio": false,
+    "split_by_chapters": false,
+    "resolution": null,
+    "max_file_size": null,
+    "subtitle": false,
+    "thumbnail": false,
+    "sponsorblock": false,
+    "output_path": ""
+  },
+  {
+    "name": "Best (1080p)",
+    "include_video": true,
+    "include_audio": true,
+    "split_video_and_audio": false,
+    "split_by_chapters": false,
+    "resolution": "1080p",
+    "max_file_size": null,
+    "subtitle": false,
+    "thumbnail": false,
+    "sponsorblock": false,
+    "output_path": ""
+  },
+  {
+    "name": "Best (720p)",
+    "include_video": true,
+    "include_audio": true,
+    "split_video_and_audio": false,
+    "split_by_chapters": false,
+    "resolution": "720p",
+    "max_file_size": null,
+    "subtitle": false,
+    "thumbnail": false,
+    "sponsorblock": false,
+    "output_path": ""
+  }
+]

@@ -7,8 +7,8 @@ class InputSizeLimitFrame(ctk.CTkFrame):
         self._label_smaller = ctk.CTkLabel(self, text="(<")
         self._label_smaller.grid(row=0, column=0, sticky="w")
 
-        self._size_limit = ctk.StringVar(value="")
-        self._input_size_limit = ctk.CTkEntry(self, width=48, textvariable=self._size_limit)
+        self.size_limit = ctk.DoubleVar(value="")
+        self._input_size_limit = ctk.CTkEntry(self, width=48, textvariable=self.size_limit)
         self._input_size_limit.grid(row=0, column=1, padx=(5, 5), sticky="w")
 
         self._label_megabyte = ctk.CTkLabel(self, text="MB)")

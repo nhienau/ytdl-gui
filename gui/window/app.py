@@ -3,6 +3,7 @@ import customtkinter as ctk
 from gui.frame.control import ControlFrame
 from gui.frame.settings import SettingsFrame
 from gui.frame.table import TableFrame
+from preset import preset
 
 class App(ctk.CTk):
     def __init__(self):
@@ -12,17 +13,37 @@ class App(ctk.CTk):
         self.grid_columnconfigure(tuple([val for val in range(0, 20)]), weight=1)
         self.grid_rowconfigure(1, weight=1)
         ctk.set_appearance_mode("light")
+        self._toplevel_window = None
         self._data = []
-        
+        preset.setup()
+        self._preset = preset.get_all()
+
         self._control_frame = ControlFrame(self)
         self._control_frame.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="nswe", columnspan=20)
         
         self._settings_frame = SettingsFrame(self)
         self._settings_frame.grid(row=1, column=0, padx=(10, 5), pady=(5, 10), sticky="nswe", columnspan=4)
+        self._settings_frame.preset = self._preset
 
         self._table_frame = TableFrame(self, data=self._data)
         self._table_frame.grid(row=1, column=4, padx=(5, 10), pady=(5, 10), sticky="nswe", columnspan=16)
         self._table_frame.display(self._data)
+
+    @property
+    def toplevel_window(self):
+        return self._toplevel_window
+
+    @toplevel_window.setter
+    def toplevel_window(self, toplevel_window):
+        self._toplevel_window = toplevel_window
+
+    @property
+    def preset(self):
+        return self._preset
+
+    @preset.setter
+    def preset(self, preset):
+        self._preset = preset
 
     def on_add_urls(self, entries):
         existing_urls = {entry.get("webpage_url") or entry.get("url") for entry in self._data}

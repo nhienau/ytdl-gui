@@ -6,7 +6,7 @@ from gui.window.add_url import AddUrlWindow
 class ControlFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self._toplevel_window = None
+        self._parent = master
         self.callbacks = {
             "on_add_urls": master.on_add_urls,
         }
@@ -21,11 +21,15 @@ class ControlFrame(ctk.CTkFrame):
         self._button_download = ctk.CTkButton(self, image=self._icon_download, text="", width=32, fg_color="transparent", hover_color="#EBEBEB", anchor="center")
         self._button_download.grid(row=0, column=1)
 
+        self._button_preset = ctk.CTkButton(self, text="Preset", width=32)
+        self._button_preset.grid(row=0, column=2)
+
     def _on_add_url_click(self):
-        if self._toplevel_window is None or not self._toplevel_window.winfo_exists():
-            self._toplevel_window = AddUrlWindow(self) # create window if its None or destroyed
-            self._toplevel_window.add_callbacks(self.callbacks)
+        if self._parent.toplevel_window is None or not self._parent.toplevel_window.winfo_exists():
+            self._parent.toplevel_window = AddUrlWindow(self)
+            self._parent.toplevel_window.add_callbacks(self.callbacks)
         else:
-            self._toplevel_window.focus() # if window exists focus it
+            self._parent.toplevel_window.focus()
+            self._parent.toplevel_window.lift()
 
     
