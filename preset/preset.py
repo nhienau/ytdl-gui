@@ -31,7 +31,7 @@ def update(preset):
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
     with connection:
-        cursor.execute("UPDATE preset SET name = :name, include_video = :include_video, include_audio = :include_audio, split_video_and_audio = :split_video_and_audio, split_by_chapters = :split_by_chapters, resolution = :resolution, max_file_size = :max_file_size, subtitle = :subtitle, thumbnail = :thumbnail, sponsorblock = :sponsorblock, output_path = :output_path WHERE id = :id", preset)
+        cursor.execute("UPDATE preset SET name = :name, include_video = :include_video, include_audio = :include_audio, split_video_and_audio = :split_video_and_audio, split_by_chapters = :split_by_chapters, resolution = :resolution, max_file_size = :max_file_size, subtitle = :subtitle, thumbnail = :thumbnail, sponsorblock = :sponsorblock, output_path = :output_path, editable = :editable WHERE id = :id", preset)
     connection.close()
 
 def delete(preset_id):
