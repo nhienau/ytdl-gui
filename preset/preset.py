@@ -1,12 +1,14 @@
 import json
 import sqlite3
 
+from helper.get_download_folder import get_download_folder
+
 DATABASE = "preset/preset.db"
 DEFAULT_PRESET_FILE_NAME = "preset/default_presets.json"
 
 def convert_data_tuples_to_dictionaries(lst):
-    keys = ['id', 'name', 'include_video', 'include_audio', 'split_video_and_audio', 'split_by_chapters', 'resolution', 'max_file_size', 'subtitle', 'thumbnail', 'sponsorblock', 'output_path']
-    boolean_keys = ('include_video', 'include_audio', 'split_video_and_audio', 'split_by_chapters', 'subtitle', 'thumbnail', 'sponsorblock')
+    keys = ['id', 'name', 'include_video', 'include_audio', 'split_video_and_audio', 'split_by_chapters', 'resolution', 'max_file_size', 'subtitle', 'thumbnail', 'sponsorblock', 'output_path', 'editable']
+    boolean_keys = ('include_video', 'include_audio', 'split_video_and_audio', 'split_by_chapters', 'subtitle', 'thumbnail', 'sponsorblock', 'editable')
     result = [{keys[i]: bool(el[i]) if keys[i] in boolean_keys else el[i] for i in range(len(keys))} for el in lst]
     return result
 
@@ -22,7 +24,7 @@ def insert(preset):
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
     with connection:
-        cursor.execute("INSERT INTO preset (name, include_video, include_audio, split_video_and_audio, split_by_chapters, resolution, max_file_size, subtitle, thumbnail, sponsorblock, output_path) VALUES (:name, :include_video, :include_audio, :split_video_and_audio, :split_by_chapters, :resolution, :max_file_size, :subtitle, :thumbnail, :sponsorblock, :output_path)", preset)
+        cursor.execute("INSERT INTO preset (name, include_video, include_audio, split_video_and_audio, split_by_chapters, resolution, max_file_size, subtitle, thumbnail, sponsorblock, output_path, editable) VALUES (:name, :include_video, :include_audio, :split_video_and_audio, :split_by_chapters, :resolution, :max_file_size, :subtitle, :thumbnail, :sponsorblock, :output_path, :editable)", preset)
     connection.close()
 
 def update(preset):
@@ -55,14 +57,17 @@ def setup():
                 subtitle INTEGER NOT NULL,
                 thumbnail INTEGER NOT NULL,
                 sponsorblock INTEGER NOT NULL,
-                output_path TEXT
+                output_path TEXT,
+                editable INTEGER NOT NULL
             )""")
     
     presets = get_all()
     if len(presets) == 0:
+        download_folder = get_download_folder()
         with open(DEFAULT_PRESET_FILE_NAME, "r") as f:
             default_presets = json.load(f)
         for preset in default_presets:
+            preset["output_path"] = download_folder
             insert(preset)
         
     connection.close()

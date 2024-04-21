@@ -130,6 +130,9 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
         print(data)
 
     def display(self, preset):
+        elements_state = "normal" if preset["editable"] is True else "disabled"
+        self.set_elements_state(elements_state)
+
         self._var_preset_name.set(preset["name"])
         if preset["include_video"] and preset["include_audio"]:
             self._combobox_download_option.set("Video + audio")
@@ -162,6 +165,9 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
         self._button_cancel_delete.grid_forget()
         self._button_confirm_delete.grid_forget()
 
+    def set_elements_state(self, state):
+        for element in [self._entry_preset_name, self._combobox_download_option, self._checkbox_split_video_audio, self._checkbox_chapter, self._combobox_resolution, self._combobox_size_limit, self._frame_size_limit._input_size_limit, self._checkbox_subtitle, self._checkbox_thumbnail, self._checkbox_sponsorblock]:
+            element.configure(state=state)
 
     def set_appearance_button_cancel_and_ok(self, visibility):
         if visibility is True:
@@ -238,7 +244,8 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
                 "subtitle": self._subtitle.get(),
                 "thumbnail": self._thumbnail.get(),
                 "sponsorblock": self._sponsorblock.get(),
-                "output_path": self._output_path.get()
+                "output_path": self._output_path.get(),
+                "editable": True
             }
             self._parent.create_new_preset(preset)
         else:

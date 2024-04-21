@@ -10,7 +10,8 @@
     "subtitle": false,
     "thumbnail": false,
     "sponsorblock": false,
-    "output_path": ""
+    "output_path": "",
+    "editable": false
   },
   {
     "name": "Best (1080p)",
@@ -23,7 +24,8 @@
     "subtitle": false,
     "thumbnail": false,
     "sponsorblock": false,
-    "output_path": ""
+    "output_path": "",
+    "editable": false
   },
   {
     "name": "Best (720p)",
@@ -36,6 +38,7 @@
     "subtitle": false,
     "thumbnail": false,
     "sponsorblock": false,
-    "output_path": ""
+    "output_path": "",
+    "editable": false
   }
 ]

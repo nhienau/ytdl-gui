@@ -60,10 +60,11 @@ class PresetWindow(ctk.CTkToplevel):
         self._button_save_preset.configure(state="disabled")
         self._button_delete_preset.configure(state="disabled")
         self._preset_table_frame.deselect()
-        self._preset_detail_frame.grid(row = 1, column = 5, sticky = "nswe", columnspan = 15, padx = 10, pady = 10)
+        self._preset_detail_frame.set_elements_state("normal")
         self._preset_detail_frame._var_preset_name.set("")
         self._preset_detail_frame._output_path.set(get_download_folder())
         self._preset_detail_frame.set_appearance_button_cancel_and_ok(True)
+        self._preset_detail_frame.grid(row = 1, column = 5, sticky = "nswe", columnspan = 15, padx = 10, pady = 10)
         
     def on_new_preset_cancel_clicked(self):
         self._button_new_preset.configure(state="normal")
