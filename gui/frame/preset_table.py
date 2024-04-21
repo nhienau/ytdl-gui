@@ -18,6 +18,7 @@ class PresetTableFrame(ctk.CTkFrame):
         self._sheet.grid(row = 0, column = 0, sticky = "nswe", columnspan=20)
 
         self.display(self.root_data.preset)
+        self._sheet.add_row_selection(row=self.root_data.preset.index(self.root_data.current_preset), redraw=True, run_binding_func=False)
 
     @property
     def root_data(self):
@@ -35,5 +36,12 @@ class PresetTableFrame(ctk.CTkFrame):
             column = currently_selected.column
             self._sheet.deselect(row, column)
         self._sheet.set_sheet_data(data=list_to_display, reset_col_positions=False)
+
+    def deselect(self):
+        currently_selected = self._sheet.get_currently_selected()
+        if currently_selected:
+            row = currently_selected.row
+            column = currently_selected.column
+            self._sheet.deselect(row, column)
 
 
