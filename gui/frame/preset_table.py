@@ -15,6 +15,7 @@ class PresetTableFrame(ctk.CTkFrame):
         self._sheet.column_width(0, width=300)
         self._sheet.enable_bindings("single_select", "row_select", "column_width_resize", "double_click_column_resize", "up", "down")
         self._sheet.extra_bindings(["cell_select", "row_select", "up", "down"], func=lambda e: master.on_table_cell_selected(e))
+        self._sheet.extra_bindings(["deselect"], func=lambda e: master.on_table_deselected(e))
         self._sheet.grid(row = 0, column = 0, sticky = "nswe", columnspan=20)
 
         self.display(self.root_data.preset)

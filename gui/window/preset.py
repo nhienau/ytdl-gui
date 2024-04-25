@@ -16,6 +16,7 @@ class PresetWindow(ctk.CTkToplevel):
         self.grid_rowconfigure(1, weight=1)
         self._root_data = list(args)[0]._parent
         self._selected_preset = self._root_data.current_preset
+        self._new_preset_creating = False
 
         self._button_new_preset = ctk.CTkButton(self, text="New", width=24, command=self._on_new_preset_clicked)
         self._button_new_preset.grid(row = 0, column = 5, padx=(10, 5), pady = (10, 0))
@@ -32,7 +33,7 @@ class PresetWindow(ctk.CTkToplevel):
         self._preset_detail_frame = PresetDetailFrame(self)
         self._preset_detail_frame.grid(row = 1, column = 5, sticky = "nswe", columnspan = 15, padx = 10, pady = 10)
 
-        self._button_confirm_choose_preset = ctk.CTkButton(self, text="OK")
+        self._button_confirm_choose_preset = ctk.CTkButton(self, text="OK", command=self._on_preset_chosen)
         self._button_confirm_choose_preset.grid(row = 2, column=19, sticky="e", padx = (0, 10), pady = (0, 10))
 
     @property
@@ -44,6 +45,7 @@ class PresetWindow(ctk.CTkToplevel):
         self._root_data = root_data
 
     def on_table_cell_selected(self, e):
+        self._new_preset_creating = False
         currently_selected = self._preset_table_frame._sheet.get_currently_selected()
         row = currently_selected.row
         self._selected_preset = self.root_data.preset[row]
@@ -52,8 +54,10 @@ class PresetWindow(ctk.CTkToplevel):
         self._button_save_preset.configure(state="disabled")
         self._button_delete_preset.configure(state="normal" if self.root_data.preset[row]["editable"] is True else "disabled")
         self._preset_detail_frame.grid(row = 1, column = 5, sticky = "nswe", columnspan = 15, padx = 10, pady = 10)
+        self._button_confirm_choose_preset.configure(state="normal")
 
     def _on_new_preset_clicked(self):
+        self._new_preset_creating = True
         self._selected_preset = None
         self._preset_detail_frame.preset = self._selected_preset
         self._button_new_preset.configure(state="disabled")
@@ -65,13 +69,15 @@ class PresetWindow(ctk.CTkToplevel):
         self._button_save_preset.configure(state="disabled")
         self._preset_detail_frame.set_appearance_button_cancel_and_ok(True)
         self._preset_detail_frame.grid(row = 1, column = 5, sticky = "nswe", columnspan = 15, padx = 10, pady = 10)
-
+        self._button_confirm_choose_preset.configure(state="disabled")
         
     def on_new_preset_cancel_clicked(self):
+        self._new_preset_creating = False
         self._button_new_preset.configure(state="normal")
         self._preset_detail_frame.clear_all_input()
         self._preset_detail_frame.set_appearance_button_cancel_and_ok(False)
         self._preset_detail_frame.grid_forget()
+        self._button_confirm_choose_preset.configure(state="disabled")
 
     def create_new_preset(self, new_preset):
         preset.insert(new_preset)
@@ -83,6 +89,8 @@ class PresetWindow(ctk.CTkToplevel):
         self._preset_table_frame.display(self.root_data.preset)
         self._preset_table_frame._sheet.add_row_selection(row=len(self.root_data.preset) - 1, redraw=True, run_binding_func=False)
         self._preset_detail_frame.preset = self._selected_preset
+        self._new_preset_creating = False
+        self._button_confirm_choose_preset.configure(state="normal")
 
     def _on_delete_preset_clicked(self):
         self._preset_detail_frame.show_confirm_delete_message(self._selected_preset)
@@ -93,29 +101,38 @@ class PresetWindow(ctk.CTkToplevel):
         self.root_data.preset = preset.get_all()
         self.root_data.current_preset = self.root_data.preset[0]
         self._selected_preset = self.root_data.current_preset
-        self._button_new_preset.configure(state="normal")
-        self._button_save_preset.configure(state="disabled")
-        self._button_delete_preset.configure(state="disabled")
-        self._preset_table_frame.display(self.root_data.preset)
-        self._preset_table_frame._sheet.add_row_selection(row=0, redraw=True, run_binding_func=False)
         self._preset_detail_frame.preset = self._selected_preset
+        self._preset_table_frame.display(self.root_data.preset)
+        self._preset_table_frame._sheet.add_row_selection(row=0, redraw=True, run_binding_func=True)
+        self._button_confirm_choose_preset.configure(state="normal")
 
     def enable_button_save(self, _, __, ___):
-        self._button_save_preset.configure(state="normal")
+        if self._new_preset_creating is False:
+            self._button_save_preset.configure(state="normal")
 
     def update_preset(self, preset_data):
         preset.update(preset_data)
         currently_selected = self._preset_table_frame._sheet.get_currently_selected()
         row = currently_selected.row
         self.root_data.preset = preset.get_all()
-        self._selected_preset = self.root_data.preset[row]
-        self._preset_detail_frame.preset = self.root_data.preset[row]
-        self._button_new_preset.configure(state="normal")
-        self._button_save_preset.configure(state="disabled")
-        self._button_delete_preset.configure(state="normal" if self.root_data.preset[row]["editable"] is True else "disabled")
         self._preset_table_frame.display(self.root_data.preset)
-        self._preset_table_frame._sheet.add_row_selection(row=row, redraw=True, run_binding_func=False)
-        self._preset_detail_frame.grid(row = 1, column = 5, sticky = "nswe", columnspan = 15, padx = 10, pady = 10)
+        self._preset_table_frame._sheet.add_row_selection(row=row, redraw=True, run_binding_func=True)
+        self._button_confirm_choose_preset.configure(state="normal")
 
     def _on_save_preset_clicked(self):
         self._preset_detail_frame._on_update_preset_clicked()
+
+    def on_table_deselected(self, e):
+        self._selected_preset = None
+        self._preset_detail_frame.preset = self._selected_preset
+        self._button_new_preset.configure(state="normal")
+        self._button_save_preset.configure(state="disabled")
+        self._button_delete_preset.configure(state="disabled")
+        self._preset_detail_frame.grid_forget()
+        self._button_confirm_choose_preset.configure(state="disabled")
+
+    def _on_preset_chosen(self):
+        self.root_data.current_preset = self._selected_preset
+        # Hiển thị preset đã chọn ra ngoài frame setting
+
+
