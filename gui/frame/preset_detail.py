@@ -3,7 +3,6 @@ from pathlib import Path
 import tkinter as tk
 
 from .input_size_limit import InputSizeLimitFrame
-from .preset_buttons import PresetButtonsFrame
 from helper.gui import set_textbox_value
 from helper.get_download_folder import get_download_folder
 
@@ -42,7 +41,7 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
 
         self._split_by_chapters = ctk.BooleanVar(value=False)
         self._split_by_chapters.trace("w", master.enable_button_save)
-        self._checkbox_chapter = ctk.CTkCheckBox(self, text="Split video by chapters", onvalue=True, offvalue=False, variable=self._split_by_chapters) # command
+        self._checkbox_chapter = ctk.CTkCheckBox(self, text="Split video by chapters", onvalue=True, offvalue=False, variable=self._split_by_chapters)
         self._checkbox_chapter.grid(row=3, column=1, padx=(10, 0), pady=(0, 10), sticky="we", columnspan=3)
         
         self._label_resolution = ctk.CTkLabel(self, text="Resolution")
@@ -69,7 +68,7 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
 
         self._subtitle = ctk.BooleanVar(value=False)
         self._subtitle.trace("w", master.enable_button_save)
-        self._checkbox_subtitle = ctk.CTkCheckBox(self, text="Download subtitle (if available)", onvalue=True, offvalue=False, variable=self._subtitle) # command, variable
+        self._checkbox_subtitle = ctk.CTkCheckBox(self, text="Download subtitle (if available)", onvalue=True, offvalue=False, variable=self._subtitle)
         self._checkbox_subtitle.grid(row=7, column=1, padx=(10, 0), pady=(0, 10), sticky="we", columnspan=3)
 
         self._label_thumbnail = ctk.CTkLabel(self, text="Thumbnail")
@@ -77,7 +76,7 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
 
         self._thumbnail = ctk.BooleanVar(value=False)
         self._thumbnail.trace("w", master.enable_button_save)
-        self._checkbox_thumbnail = ctk.CTkCheckBox(self, text="Save thumbnail (if available)", onvalue=True, offvalue=False, variable=self._thumbnail) # command, variable
+        self._checkbox_thumbnail = ctk.CTkCheckBox(self, text="Save thumbnail (if available)", onvalue=True, offvalue=False, variable=self._thumbnail)
         self._checkbox_thumbnail.grid(row=8, column=1, padx=(10, 0), pady=(0, 10), sticky="we", columnspan=3)
 
         self._label_sponsorblock = ctk.CTkLabel(self, text="Sponsorblock")
@@ -85,7 +84,7 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
 
         self._sponsorblock = ctk.BooleanVar(value=False)
         self._sponsorblock.trace("w", master.enable_button_save)
-        self._checkbox_sponsorblock = ctk.CTkCheckBox(self, text="Remove sponsor sections", onvalue=True, offvalue=False, variable=self._sponsorblock) # command, variable
+        self._checkbox_sponsorblock = ctk.CTkCheckBox(self, text="Remove sponsor sections", onvalue=True, offvalue=False, variable=self._sponsorblock)
         self._checkbox_sponsorblock.grid(row=9, column=1, padx=(10, 0), pady=(0, 10), sticky="we", columnspan=3)
 
         self._label_output_folder = ctk.CTkLabel(self, text="Output folder")
@@ -186,7 +185,7 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
         self._output_path.set(preset["output_path"])
         set_textbox_value(self._textbox_message, "")
         self._textbox_message.grid_forget()
-        self.set_appearance_button_cancel_and_ok(False)
+        self.set_visibility_button_cancel_and_ok(False)
         self._button_cancel_delete.grid_forget()
         self._button_confirm_delete.grid_forget()
 
@@ -203,7 +202,7 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
         for element in self._combobox_elements:
             element.configure(state=combobox_state)
 
-    def set_appearance_button_cancel_and_ok(self, visibility):
+    def set_visibility_button_cancel_and_ok(self, visibility):
         if visibility is True:
             self._button_cancel.grid(row=12, column=2, pady=(0, 10), sticky="e")
             self._button_ok.grid(row=12, column=3, padx=(5, 0), pady=(0, 10), sticky="we")
@@ -316,3 +315,5 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
         else:
             set_textbox_value(self._textbox_message, validation["error_message"])
             self._textbox_message.grid(row=11, column=0, pady=(0, 10), sticky="ew", columnspan=4)
+
+

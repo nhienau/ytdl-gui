@@ -14,6 +14,7 @@ class PresetWindow(ctk.CTkToplevel):
         self.resizable(width=False, height=False)
         self.grid_columnconfigure(tuple([val for val in range(0, 20)]), weight=1)
         self.grid_rowconfigure(1, weight=1)
+        self._parent = list(args)[0]
         self._root_data = list(args)[0]._parent
         self._selected_preset = self._root_data.current_preset
         self._new_preset_creating = False
@@ -67,7 +68,7 @@ class PresetWindow(ctk.CTkToplevel):
         self._preset_detail_frame._var_preset_name.set("")
         self._preset_detail_frame._output_path.set(get_download_folder())
         self._button_save_preset.configure(state="disabled")
-        self._preset_detail_frame.set_appearance_button_cancel_and_ok(True)
+        self._preset_detail_frame.set_visibility_button_cancel_and_ok(True)
         self._preset_detail_frame.grid(row = 1, column = 5, sticky = "nswe", columnspan = 15, padx = 10, pady = 10)
         self._button_confirm_choose_preset.configure(state="disabled")
         
@@ -75,7 +76,7 @@ class PresetWindow(ctk.CTkToplevel):
         self._new_preset_creating = False
         self._button_new_preset.configure(state="normal")
         self._preset_detail_frame.clear_all_input()
-        self._preset_detail_frame.set_appearance_button_cancel_and_ok(False)
+        self._preset_detail_frame.set_visibility_button_cancel_and_ok(False)
         self._preset_detail_frame.grid_forget()
         self._button_confirm_choose_preset.configure(state="disabled")
 
@@ -97,10 +98,13 @@ class PresetWindow(ctk.CTkToplevel):
 
     def on_preset_confirm_delete_clicked(self, preset_info):
         preset_id = preset_info["id"]
+        prev_current_preset_id = self.root_data.current_preset["id"]
         preset.delete(preset_id)
         self.root_data.preset = preset.get_all()
-        self.root_data.current_preset = self.root_data.preset[0]
-        self._selected_preset = self.root_data.current_preset
+        if preset_id == prev_current_preset_id:
+            self.root_data.current_preset = self.root_data.preset[0]
+            self._parent.display(self.root_data.current_preset)
+        self._selected_preset = self.root_data.preset[0]
         self._preset_detail_frame.preset = self._selected_preset
         self._preset_table_frame.display(self.root_data.preset)
         self._preset_table_frame._sheet.add_row_selection(row=0, redraw=True, run_binding_func=True)
@@ -112,6 +116,9 @@ class PresetWindow(ctk.CTkToplevel):
 
     def update_preset(self, preset_data):
         preset.update(preset_data)
+        if preset_data["id"] == self.root_data.current_preset["id"]:
+            self.root_data.current_preset.update(preset_data)
+            self._parent.display(self.root_data.current_preset)
         currently_selected = self._preset_table_frame._sheet.get_currently_selected()
         row = currently_selected.row
         self.root_data.preset = preset.get_all()
@@ -133,6 +140,15 @@ class PresetWindow(ctk.CTkToplevel):
 
     def _on_preset_chosen(self):
         self.root_data.current_preset = self._selected_preset
-        # Hiển thị preset đã chọn ra ngoài frame setting
+        self._parent.display(self.root_data.current_preset)
+        self.destroy()
+
+    def on_main_window_preset_updated(self):
+        currently_selected = self._preset_table_frame._sheet.get_currently_selected()
+        self._preset_table_frame.display(self.root_data.preset)
+        if currently_selected:
+            row = currently_selected.row
+            self._preset_table_frame._sheet.add_row_selection(row=row, redraw=True, run_binding_func=True)
+            self._button_confirm_choose_preset.configure(state="normal")
 
 
