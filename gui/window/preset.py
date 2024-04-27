@@ -18,6 +18,7 @@ class PresetWindow(ctk.CTkToplevel):
         self._root_data = list(args)[0]._parent
         self._selected_preset = self._root_data.current_preset
         self._new_preset_creating = False
+        self._choose = False # check if this window is opened for changing curent preset or not
 
         self._button_new_preset = ctk.CTkButton(self, text="New", width=24, command=self._on_new_preset_clicked)
         self._button_new_preset.grid(row = 0, column = 5, padx=(10, 5), pady = (10, 0))
@@ -35,7 +36,15 @@ class PresetWindow(ctk.CTkToplevel):
         self._preset_detail_frame.grid(row = 1, column = 5, sticky = "nswe", columnspan = 15, padx = 10, pady = 10)
 
         self._button_confirm_choose_preset = ctk.CTkButton(self, text="OK", command=self._on_preset_chosen)
-        self._button_confirm_choose_preset.grid(row = 2, column=19, sticky="e", padx = (0, 10), pady = (0, 10))
+
+        self._button_close = ctk.CTkButton(self, text="Close", command=lambda: self.destroy())
+
+        if self._choose is True:
+            self._button_confirm_choose_preset.grid(row = 2, column=18, sticky="e", padx = (0, 10), pady = (0, 10))
+            self._button_close.grid_forget()
+        else:
+            self._button_close.grid(row = 2, column=19, sticky="e", padx = (0, 10), pady = (0, 10))
+            self._button_confirm_choose_preset.grid_forget()
 
     @property
     def root_data(self):
@@ -44,6 +53,20 @@ class PresetWindow(ctk.CTkToplevel):
     @root_data.setter
     def root_data(self, root_data):
         self._root_data = root_data
+
+    @property
+    def choose(self):
+        return self._choose
+
+    @choose.setter
+    def choose(self, choose):
+        self._choose = choose
+        if self._choose is True:
+            self._button_confirm_choose_preset.grid(row = 2, column=18, sticky="e", padx = (0, 10), pady = (0, 10))
+            self._button_close.grid_forget()
+        else:
+            self._button_close.grid(row = 2, column=19, sticky="e", padx = (0, 10), pady = (0, 10))
+            self._button_confirm_choose_preset.grid_forget()
 
     def on_table_cell_selected(self, e):
         self._new_preset_creating = False
