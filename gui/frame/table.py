@@ -22,13 +22,15 @@ class TableFrame(ctk.CTkFrame):
         self._button_deselect_all.grid(row=0, column=19, padx=(5, 10), pady=10, sticky="ew")
 
         self._sheet = Sheet(self, data = [])
-        self._sheet.headers([" ", "Title", "URL", "Video", "Audio", "Progress", "Status", "Length", "Size", "Subtitle", "Thumbnail", "Sponsorblock"])
+        self._sheet.headers([" ", "Title", "URL", "Length", "Cookies", "Progress", "Status", "Video", "Audio", "Split v+a", "Split by chapters", "Resolution", "Size", "Subtitle", "Thumbnail", "Sponsorblock", "Output folder"])
         self._sheet.row_index([])
         self._sheet.checkbox("A", check_function=self._on_entry_checked)
         self._sheet.column_width(0, width=30)
-        self._sheet.column_width(2, width=180)
-        for x in range(3, 12):
+        for x in range(1, 15):
             self._sheet.column_width(x, width=110)
+        self._sheet.column_width(1, width=240)
+        self._sheet.column_width(2, width=240)
+        self._sheet.column_width(16, width=240)
 
         self._selecting = False
         self._last_selected_row = None
@@ -53,7 +55,26 @@ class TableFrame(ctk.CTkFrame):
         self.display(self.parent.download_list)
     
     def display(self, data, deselect = True, redraw = True):
-        list_to_display = [[entry["selected"], entry["title"], entry.get("webpage_url") or entry.get("url"), "", "", "", "", "", "", "", "", ""] for entry in data]
+        list_to_display = [
+            [
+                entry["selected"], 
+                entry["title"], 
+                entry.get("webpage_url") or entry.get("url"), 
+                entry["duration_string"],
+                "None" if entry["cookies"] == "" else entry["cookies"].title(),
+                "",
+                "",
+                "Yes" if entry["preset"]["include_video"] is True else "No",
+                "Yes" if entry["preset"]["include_audio"] is True else "No",
+                "Yes" if entry["preset"]["split_video_and_audio"] is True else "No",
+                "Yes" if entry["preset"]["split_by_chapters"] is True else "No",
+                "Best" if entry["preset"]["resolution"] is None else entry["preset"]["resolution"],
+                "Best" if entry["preset"]["max_file_size"] is None else f"<={entry['preset']['max_file_size']}MB",
+                "Yes" if entry["preset"]["subtitle"] is True else "No",
+                "Yes" if entry["preset"]["thumbnail"] is True else "No",
+                "Yes" if entry["preset"]["sponsorblock"] is True else "No",
+                entry["preset"]["output_path"]]
+             for entry in data]
         if deselect is True:
             currently_selected = self._sheet.get_currently_selected()
             if currently_selected:
@@ -108,6 +129,7 @@ class TableFrame(ctk.CTkFrame):
             currently_selected = self._sheet.get_currently_selected()
             self._last_selected_row = None if len(currently_selected) == 0 else currently_selected.row
             self._table_buttons_frame.set_buttons_state("disabled" if len(currently_selected) == 0 else "normal")
+            self.parent.on_table_rows_clicked(self._selected_rows)
             return
         
         # Skip if selected on checkbox cell
@@ -120,11 +142,13 @@ class TableFrame(ctk.CTkFrame):
         self._last_selected_row = row
         self._selected_rows.append(row)
         self._table_buttons_frame.set_buttons_state("disabled" if len(currently_selected) == 0 else "normal")
+        self.parent.on_table_rows_clicked(self._selected_rows)
             
     def _on_cell_deselected(self, e):
         if e["selection_boxes"] == {}:
             self._selected_rows.clear()
             self._table_buttons_frame.set_buttons_state("disabled")
+            self.parent.on_table_rows_clicked(self._selected_rows)
             return
 
     def _on_shift_cell_selected(self, e):
@@ -139,6 +163,7 @@ class TableFrame(ctk.CTkFrame):
         
         self._selected_rows = [row for row in range(r1, r2 + 1)]
         self._table_buttons_frame.set_buttons_state("disabled" if len(currently_selected) == 0 else "normal")
+        self.parent.on_table_rows_clicked(self._selected_rows)
 
     def _toggle_marked_rows(self, value):
         for row in self._selected_rows:
@@ -150,6 +175,7 @@ class TableFrame(ctk.CTkFrame):
             self._selected_rows.append(row)
         currently_selected = self._sheet.get_currently_selected()
         self._table_buttons_frame.set_buttons_state("disabled" if len(currently_selected) == 0 else "normal")
+        self.parent.on_table_rows_clicked(self._selected_rows)
 
     def move_rows_up(self):
         currently_selected = self._sheet.get_currently_selected()
@@ -170,6 +196,7 @@ class TableFrame(ctk.CTkFrame):
         self._last_selected_row = self._selected_rows[-1]
         self._sheet.set_currently_selected(row=self._last_selected_row)
         self._table_buttons_frame.set_buttons_state("normal")
+        self.parent.on_table_rows_clicked(self._selected_rows)
 
     def move_rows_down(self):
         currently_selected = self._sheet.get_currently_selected()
@@ -190,6 +217,7 @@ class TableFrame(ctk.CTkFrame):
         self._last_selected_row = self._selected_rows[-1]
         self._sheet.set_currently_selected(row=self._last_selected_row)
         self._table_buttons_frame.set_buttons_state("normal")
+        self.parent.on_table_rows_clicked(self._selected_rows)
 
     def move_rows_to_top(self):
         currently_selected = self._sheet.get_currently_selected()
@@ -207,6 +235,7 @@ class TableFrame(ctk.CTkFrame):
         self._last_selected_row = self._selected_rows[-1]
         self._sheet.set_currently_selected(row=self._last_selected_row)
         self._table_buttons_frame.set_buttons_state("normal")
+        self.parent.on_table_rows_clicked(self._selected_rows)
         
     def move_rows_to_bottom(self):
         currently_selected = self._sheet.get_currently_selected()
@@ -224,6 +253,7 @@ class TableFrame(ctk.CTkFrame):
         self._last_selected_row = self._selected_rows[-1]
         self._sheet.set_currently_selected(row=self._last_selected_row)
         self._table_buttons_frame.set_buttons_state("normal")
+        self.parent.on_table_rows_clicked(self._selected_rows)
 
     def delete_marked_rows(self):
         currently_selected = self._sheet.get_currently_selected()
@@ -247,6 +277,7 @@ class TableFrame(ctk.CTkFrame):
             self._set_buttons_state("disabled")
         else:
             self._table_buttons_frame.grid(row=0, column=0, padx=(10, 0), sticky="w")
+        self.parent.on_table_rows_clicked(self._selected_rows)
         
     def clear_list(self):
         for i in self._selected_rows:
@@ -258,6 +289,7 @@ class TableFrame(ctk.CTkFrame):
         self._table_buttons_frame.set_buttons_state("disabled")
         self._table_buttons_frame.grid_forget()
         self._set_buttons_state("disabled")
+        self.parent.on_table_rows_clicked(self._selected_rows)
 
     def _set_buttons_state(self, state):
         self._button_select_all.configure(state=state)

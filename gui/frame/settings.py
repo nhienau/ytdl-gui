@@ -16,12 +16,14 @@ class SettingsFrame(ctk.CTkScrollableFrame):
         self.grid_columnconfigure((1), weight=1)
         self._parent = master
         self._temp_preset_name = ""
+        self.apply_option = ""
+
         self._label_title = ctk.CTkLabel(self, text="Title")
         self._label_title.grid(row=0, column=0, pady=(0, 10), sticky="nw")
 
         self._textbox_title = ctk.CTkTextbox(self)
         self._textbox_title.grid(row=0, column=1, padx=(10, 0), pady=(0, 10), sticky="ew", columnspan=3)
-        self._textbox_title.insert("0.0", "Test")
+        self._textbox_title.insert("0.0", "(No videos selected)")
         self._textbox_title.configure(height=20, state="disabled", border_width=0, border_spacing=0, corner_radius=0, fg_color="transparent")
 
         self._label_preset = ctk.CTkLabel(self, text="Preset")
@@ -115,14 +117,18 @@ class SettingsFrame(ctk.CTkScrollableFrame):
         self._button_browse = ctk.CTkButton(self, text="Browse", width=24, command=self._on_browse_dir_clicked)
         self._button_browse.grid(row=12, column=3, padx=(5, 0), pady=(0, 10), sticky="we")
 
-        self._button_apply_to_all = ctk.CTkButton(self, text="Apply to all", width=24)
+        self._button_apply_to_all = ctk.CTkButton(self, text="Apply to all", width=24, command=self._on_apply_preset_click)
         self._button_apply_to_all.grid(row=13, column=2, pady=(0, 10), sticky="e")
 
-        self._button_apply_single = ctk.CTkButton(self, text="Apply", width=24)
+        self._button_apply_single = ctk.CTkButton(self, text="Apply", width=24, command=lambda: self._on_apply_preset_click(apply_all=False))
         self._button_apply_single.grid(row=13, column=3, pady=(0, 10), sticky="e")
 
         self._textbox_message = ctk.CTkTextbox(self)
         self._textbox_message.configure(height=20, state="disabled", border_width=0, border_spacing=0, corner_radius=0, fg_color="transparent")
+
+        self._button_cancel_apply = ctk.CTkButton(self, text="Cancel", width=24, command=self._on_button_cancel_apply_clicked)
+
+        self._button_confirm_apply = ctk.CTkButton(self, text="OK", width=24, command=master.on_confirm_apply_preset)
 
         # For toggling combobox state
         self._combobox_elements = [self._combobox_download_option, self._combobox_resolution, self._combobox_size_limit]
@@ -197,6 +203,7 @@ class SettingsFrame(ctk.CTkScrollableFrame):
         self._temp_preset_name = preset["name"]
         self._preset_buttons_frame._button_rename_preset.configure(state="normal" if preset["editable"] is True else "disabled")
         self._preset_buttons_frame._button_save_preset_changes.configure(state="disabled")
+        self.hide_message()
 
     def set_elements_state(self, state):
         for element in [self._checkbox_split_video_audio, self._checkbox_chapter, self._frame_size_limit._input_size_limit, self._checkbox_subtitle, self._checkbox_thumbnail, self._checkbox_sponsorblock]:
@@ -208,7 +215,8 @@ class SettingsFrame(ctk.CTkScrollableFrame):
 
     def _on_option_change(self, _, __, ___):
         self._preset_buttons_frame._button_save_preset_changes.configure(state="normal")
-        set_textbox_value(self._textbox_preset, self._temp_preset_name + " (*)")
+        if self._parent.displaying_video_settings is False:
+            set_textbox_value(self._textbox_preset, self._temp_preset_name + " (*)")
 
     def _on_download_option_change(self, value):
         if value == "Video + audio":
@@ -294,5 +302,58 @@ class SettingsFrame(ctk.CTkScrollableFrame):
         else:
             set_textbox_value(self._textbox_message, validation["error_message"])
             self._textbox_message.grid(row=14, column=0, pady=(0, 10), sticky="ew", columnspan=4)
+
+    def set_visibility_buttons_frame(self, visibility):
+        if visibility is True:
+            self._preset_buttons_frame.grid(row=2, column=2, pady=(0, 10), sticky="e", columnspan=2)
+        else:
+            self._preset_buttons_frame.grid_forget()
+
+    def set_visibility_textbox_message(self, visibility):
+        if visibility is True:
+            self._textbox_message.grid(row=14, column=0, pady=(0, 10), sticky="ew", columnspan=4)
+        else:
+            self._textbox_message.grid_forget()
+
+    def _on_apply_preset_click(self, apply_all=True):
+        self._textbox_message.grid_forget()
+        validation = self.validate_form_data()
+
+        if validation["valid"] is False:
+            self.show_message(message = validation["error_message"], show_button = False)
+            return
+
+        self.apply_option = "all" if apply_all is True else "selected"
+
+        num_vids_to_apply = 0
+        if apply_all is True:
+            num_vids_to_apply = len(self._parent.download_list)
+
+        else:
+            selected_rows = self._parent._table_frame._selected_rows
+            if len(selected_rows) == 0:
+                self.show_message(message = "No videos selected.", show_button = False)
+                self.apply_option = ""
+                return
+            num_vids_to_apply = len(selected_rows)
+        
+        self.show_message(message = f"Settings above will be applied to {num_vids_to_apply} url{'' if num_vids_to_apply == 1 else 's'}.", show_button = True)
+
+    def show_message(self, message, show_button=False):
+        set_textbox_value(self._textbox_message, message)
+        self._textbox_message.grid(row=14, column=0, pady=(0, 10), sticky="ew", columnspan=4)
+        if show_button is True:
+            self._button_cancel_apply.grid(row=15, column=2, pady=(0, 10), sticky="e")
+            self._button_confirm_apply.grid(row=15, column=3, pady=(0, 10), sticky="e")
+
+    def hide_message(self):
+        set_textbox_value(self._textbox_message, "")
+        self._textbox_message.grid_forget()
+        self._button_cancel_apply.grid_forget()
+        self._button_confirm_apply.grid_forget()
+
+    def _on_button_cancel_apply_clicked(self):
+        self.apply_option = ""
+        self.hide_message()
 
 

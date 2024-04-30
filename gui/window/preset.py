@@ -141,10 +141,14 @@ class PresetWindow(ctk.CTkToplevel):
         preset.update(preset_data)
         if preset_data["id"] == self.root_data.current_preset["id"]:
             self.root_data.current_preset.update(preset_data)
-            self._parent.display(self.root_data.current_preset)
+            if self.root_data._table_frame._sheet.get_currently_selected():
+                self._parent.set_visibility_buttons_frame(False)
+            else:
+                self._parent.display(self.root_data.current_preset)
         currently_selected = self._preset_table_frame._sheet.get_currently_selected()
         row = currently_selected.row
         self.root_data.preset = preset.get_all()
+        self.root_data.current_preset = self.root_data.preset[row]
         self._preset_table_frame.display(self.root_data.preset)
         self._preset_table_frame._sheet.add_row_selection(row=row, redraw=True, run_binding_func=True)
         self._button_confirm_choose_preset.configure(state="normal")
@@ -164,6 +168,8 @@ class PresetWindow(ctk.CTkToplevel):
     def _on_preset_chosen(self):
         self.root_data.current_preset = self._selected_preset
         self._parent.display(self.root_data.current_preset)
+        self.root_data.displaying_video_settings = False
+        self._parent.set_visibility_buttons_frame(True)
         self.destroy()
 
     def on_main_window_preset_updated(self):
