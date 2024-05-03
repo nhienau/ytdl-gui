@@ -87,6 +87,7 @@ class PlaylistInfoFrame(ctk.CTkFrame):
             "url": entry["url"],
             "cookies": self._data["cookies"],
             "selected": True,
+            "status": "ready"
         }, data))
         result = self.root_data.on_add_urls(data)
         message = f"Successfully added {result['added']} video{'' if result['added'] == 1 else 's'}."

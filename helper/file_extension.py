@@ -1,0 +1,1 @@
+SUPPORTED_EXTENSIONS = ["3gp", "aac", "flv", "m4a", "mp3", "mp4", "ogg", "opus", "wav", "webm"]

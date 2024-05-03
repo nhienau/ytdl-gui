@@ -130,6 +130,10 @@ class SettingsFrame(ctk.CTkScrollableFrame):
 
         self._button_confirm_apply = ctk.CTkButton(self, text="OK", width=24, command=master.on_confirm_apply_preset)
 
+        self._button_cancel_download = ctk.CTkButton(self, text="Cancel", width=24, command=self.on_button_download_clicked)
+
+        self._button_confirm_download = ctk.CTkButton(self, text="OK", width=24, command=master.on_confirm_download_clicked)
+
         # For toggling combobox state
         self._combobox_elements = [self._combobox_download_option, self._combobox_resolution, self._combobox_size_limit]
 
@@ -204,6 +208,8 @@ class SettingsFrame(ctk.CTkScrollableFrame):
         self._preset_buttons_frame._button_rename_preset.configure(state="normal" if preset["editable"] is True else "disabled")
         self._preset_buttons_frame._button_save_preset_changes.configure(state="disabled")
         self.hide_message()
+        self.set_visibility_buttons_frame(False)
+        self.set_visibility_download_confirm_buttons(False)
 
     def set_elements_state(self, state):
         for element in [self._checkbox_split_video_audio, self._checkbox_chapter, self._frame_size_limit._input_size_limit, self._checkbox_subtitle, self._checkbox_thumbnail, self._checkbox_sponsorblock]:
@@ -355,5 +361,18 @@ class SettingsFrame(ctk.CTkScrollableFrame):
     def _on_button_cancel_apply_clicked(self):
         self.apply_option = ""
         self.hide_message()
+
+    def set_visibility_download_confirm_buttons(self, visibility):
+        if visibility is True:
+            self._button_cancel_download.grid(row=16, column=2, pady=(0, 10), sticky="e")
+            self._button_confirm_download.grid(row=16, column=3, pady=(0, 10), sticky="e")
+        else:
+            self._button_cancel_download.grid_forget()
+            self._button_confirm_download.grid_forget()
+
+    def on_button_download_clicked(self):
+        self.hide_message()
+        self.set_visibility_buttons_frame(False)
+        self.set_visibility_download_confirm_buttons(False)
 
 

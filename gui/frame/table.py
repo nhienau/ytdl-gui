@@ -3,7 +3,10 @@ from PIL import Image
 from tksheet import Sheet
 
 from .table_buttons import TableButtonsFrame
+from helper.convert_byte import convert_byte
+from helper.custom_exception import DownloadStoppedException
 from helper.datetime import to_duration_string
+from helper.file_extension import SUPPORTED_EXTENSIONS
 from helper.gui import move_rows_up, move_rows_down, move_rows_to_top, move_rows_to_bottom
 
 class TableFrame(ctk.CTkFrame):
@@ -22,7 +25,7 @@ class TableFrame(ctk.CTkFrame):
         self._button_deselect_all.grid(row=0, column=19, padx=(5, 10), pady=10, sticky="ew")
 
         self._sheet = Sheet(self, data = [])
-        self._sheet.headers([" ", "Title", "URL", "Length", "Cookies", "Progress", "Status", "Video", "Audio", "Split v+a", "Split by chapters", "Resolution", "Size", "Subtitle", "Thumbnail", "Sponsorblock", "Output folder"])
+        self._sheet.headers([" ", "Title", "URL", "Length", "Cookies", "Status", "Progress", "Downloaded bytes", "Total bytes", "Speed", "ETA", "Elapsed", "Video", "Audio", "Split v+a", "Split by chapters", "Resolution", "Size", "Subtitle", "Thumbnail", "Sponsorblock", "Output folder"])
         self._sheet.row_index([])
         self._sheet.checkbox("A", check_function=self._on_entry_checked)
         self._sheet.column_width(0, width=30)
@@ -30,26 +33,12 @@ class TableFrame(ctk.CTkFrame):
             self._sheet.column_width(x, width=110)
         self._sheet.column_width(1, width=240)
         self._sheet.column_width(2, width=240)
-        self._sheet.column_width(16, width=240)
+        self._sheet.column_width(21, width=240)
 
         self._selecting = False
         self._last_selected_row = None
         self._selected_rows = []
-        self._sheet.enable_bindings("single_select", "row_select", "drag_select", "ctrl_select", "column_width_resize", "double_click_column_resize", "right_click_popup_menu", "arrowkeys")
-        self._sheet.extra_bindings(["cell_select", "drag_select_cells"], func=lambda e: self._on_cell_selected(e))
-        self._sheet.extra_bindings("deselect", func=lambda e: self._on_cell_deselected(e))
-        self._sheet.extra_bindings("shift_cell_select", func=lambda e: self._on_shift_cell_selected(e))
-        self._sheet.extra_bindings(["row_select", "drag_select_rows"], func=lambda e: self._on_row_selected(e))
-        self._sheet.popup_menu_add_command("Select marked URLs", lambda: self._toggle_marked_rows(True), empty_space_menu=False)
-        self._sheet.popup_menu_add_command("Deselect marked URLs", lambda: self._toggle_marked_rows(False), empty_space_menu=False)
-        self._sheet.popup_menu_add_command("Select all URLs", lambda: self._toggle_all_checkboxes(True), empty_space_menu=False)
-        self._sheet.popup_menu_add_command("Deselect all URLs", lambda: self._toggle_all_checkboxes(False), empty_space_menu=False)
-        self._sheet.popup_menu_add_command("Move up", lambda: self.move_rows_up(), empty_space_menu=False)
-        self._sheet.popup_menu_add_command("Move down", lambda: self.move_rows_down(), empty_space_menu=False)
-        self._sheet.popup_menu_add_command("Move to top", lambda: self.move_rows_to_top(), empty_space_menu=False)
-        self._sheet.popup_menu_add_command("Move to bottom", lambda: self.move_rows_to_bottom(), empty_space_menu=False)
-        self._sheet.popup_menu_add_command("Delete marked URLs", lambda: self.delete_marked_rows(), empty_space_menu=False)
-        self._sheet.popup_menu_add_command("Delete all URLs", lambda: self.clear_list(), empty_space_menu=False)
+        self.set_table_functionality_and_bindings(True)
         self._sheet.grid(row = 1, column = 0, sticky = "nswe", columnspan=20, padx=10, pady=(0, 10))
 
         self.display(self.parent.download_list)
@@ -62,6 +51,11 @@ class TableFrame(ctk.CTkFrame):
                 entry.get("webpage_url") or entry.get("url"), 
                 entry["duration_string"],
                 "None" if entry["cookies"] == "" else entry["cookies"].title(),
+                entry["status"].title(),
+                "",
+                "",
+                "",
+                "",
                 "",
                 "",
                 "Yes" if entry["preset"]["include_video"] is True else "No",
@@ -87,7 +81,7 @@ class TableFrame(ctk.CTkFrame):
         if len(self.parent.download_list) == 0:
             self._table_buttons_frame.set_buttons_state("disabled")
             self._table_buttons_frame.grid_forget()
-            self._set_buttons_state("disabled")
+            self.set_buttons_state("disabled")
         else:
             self._table_buttons_frame.grid(row=0, column=0, padx=(10, 0), sticky="w")
 
@@ -143,6 +137,7 @@ class TableFrame(ctk.CTkFrame):
         self._selected_rows.append(row)
         self._table_buttons_frame.set_buttons_state("disabled" if len(currently_selected) == 0 else "normal")
         self.parent.on_table_rows_clicked(self._selected_rows)
+        self.parent.set_visibility_download_info_frame(False)
             
     def _on_cell_deselected(self, e):
         if e["selection_boxes"] == {}:
@@ -274,7 +269,7 @@ class TableFrame(ctk.CTkFrame):
         if len(self.parent.download_list) == 0:
             self._table_buttons_frame.set_buttons_state("disabled")
             self._table_buttons_frame.grid_forget()
-            self._set_buttons_state("disabled")
+            self.set_buttons_state("disabled")
         else:
             self._table_buttons_frame.grid(row=0, column=0, padx=(10, 0), sticky="w")
         self.parent.on_table_rows_clicked(self._selected_rows)
@@ -288,11 +283,106 @@ class TableFrame(ctk.CTkFrame):
         
         self._table_buttons_frame.set_buttons_state("disabled")
         self._table_buttons_frame.grid_forget()
-        self._set_buttons_state("disabled")
+        self.set_buttons_state("disabled")
         self.parent.on_table_rows_clicked(self._selected_rows)
 
-    def _set_buttons_state(self, state):
+    def set_buttons_state(self, state):
         self._button_select_all.configure(state=state)
         self._button_deselect_all.configure(state=state)
+
+    def set_table_functionality_and_bindings(self, value):
+        default_bindings = ["single_select", "row_select", "drag_select", "ctrl_select", "column_width_resize", "double_click_column_resize", "right_click_popup_menu", "arrowkeys"]
+        if value is True:
+            self._sheet.enable_bindings(*default_bindings)
+            self._sheet.extra_bindings(["cell_select", "drag_select_cells"], func=lambda e: self._on_cell_selected(e))
+            self._sheet.extra_bindings("deselect", func=lambda e: self._on_cell_deselected(e))
+            self._sheet.extra_bindings("shift_cell_select", func=lambda e: self._on_shift_cell_selected(e))
+            self._sheet.extra_bindings(["row_select", "drag_select_rows"], func=lambda e: self._on_row_selected(e))
+            self._sheet.popup_menu_add_command("Select marked URLs", lambda: self._toggle_marked_rows(True), empty_space_menu=False)
+            self._sheet.popup_menu_add_command("Deselect marked URLs", lambda: self._toggle_marked_rows(False), empty_space_menu=False)
+            self._sheet.popup_menu_add_command("Select all URLs", lambda: self._toggle_all_checkboxes(True), empty_space_menu=False)
+            self._sheet.popup_menu_add_command("Deselect all URLs", lambda: self._toggle_all_checkboxes(False), empty_space_menu=False)
+            self._sheet.popup_menu_add_command("Move up", lambda: self.move_rows_up(), empty_space_menu=False)
+            self._sheet.popup_menu_add_command("Move down", lambda: self.move_rows_down(), empty_space_menu=False)
+            self._sheet.popup_menu_add_command("Move to top", lambda: self.move_rows_to_top(), empty_space_menu=False)
+            self._sheet.popup_menu_add_command("Move to bottom", lambda: self.move_rows_to_bottom(), empty_space_menu=False)
+            self._sheet.popup_menu_add_command("Delete marked URLs", lambda: self.delete_marked_rows(), empty_space_menu=False)
+            self._sheet.popup_menu_add_command("Delete all URLs", lambda: self.clear_list(), empty_space_menu=False)
+        else:
+            self._sheet.disable_bindings(*default_bindings)
+            self._sheet.popup_menu_del_command()
+
+    def set_download_status(self, entry, index, status, clear_progress_info = True):
+        entry["status"] = status
+        self._sheet.span(f"F{index + 1}").data = entry["status"].title()
+        if clear_progress_info:
+            self._sheet.span(f"G{index + 1}").data = ["" for i in range(0, 6)]
+
+    def display_progress(self, progress, stop_event, entry, index):
+        if stop_event.is_set():
+            raise DownloadStoppedException("Download stopped by user")
+
+        file_extension = progress["filename"].split(".")[-1]
+        if file_extension not in SUPPORTED_EXTENSIONS:
+            return
+        extension_info = self._parent.download_extension_info
+        if extension_info["extension"] is None:
+            extension_info["extension"] = file_extension
+        elif not extension_info["initial"] or extension_info["extension"] != file_extension:
+            extension_info["initial"] = False
+            extension_info["extension"] = file_extension
+            return
+
+        if progress["downloaded_bytes"] is None:
+            downloaded_bytes_str = ""
+        else:
+            downloaded_bytes = convert_byte(progress["downloaded_bytes"])
+            downloaded_bytes_str = f"{(downloaded_bytes['result']):.1f} {downloaded_bytes['unit']}"
+
+        if "total_bytes" not in progress and "total_bytes_estimate" not in progress:
+            total_bytes_str = ""
+        else:
+            total_bytes = convert_byte(progress.get("total_bytes") or progress.get("total_bytes_estimate"))
+            total_bytes_str = f"{(total_bytes['result']):.1f} {total_bytes['unit']}"
+        
+        if progress["speed"] is None:
+            speed_str = ""
+        else:
+            speed = convert_byte(progress["speed"])
+            speed_str = f"{(speed['result']):.1f} {speed['unit']}/s"
+
+        status = progress["status"]
+        entry["status"] = progress["status"]
+        progress_str = f"{(progress['downloaded_bytes'] / (progress.get('total_bytes') or progress.get('total_bytes_estimate')) * 100):.1f}%"
+
+        eta_str = to_duration_string(progress['eta']) if "eta" in progress else ""
+        elapsed_str = to_duration_string(progress["elapsed"]) if "elapsed" in progress else ""
+        
+        if progress["status"] == "error":
+            self.set_download_status(entry, index, progress["status"], False)
+            return
+
+        if progress["status"] == "finished":
+            status = "postprocessing"
+            entry["status"] = status
+
+        self._sheet.span(f"F{index + 1}").data = [status.title(), progress_str, downloaded_bytes_str, total_bytes_str, speed_str, eta_str, elapsed_str]
+
+    def on_url_postprocessing(self, process_info, stop_event, entry, index):
+        if stop_event.is_set():
+            raise DownloadStoppedException("Download stopped by user")
+
+        status = "finished" if process_info["status"] == "finished" else "postprocessing"
+        self.set_download_status(entry, index, status, False)
+        if process_info["status"] == "finished":
+            self._parent.on_entry_finish_downloading()
+
+    def on_download_stopped(self, entry, index):
+        self.set_download_status(entry, index, "stopped", False)
+        self._parent.download_extension_info = {}
+
+        pending_entries = [(index, entry) for index, entry in enumerate(self._parent.download_list) if entry["status"] == "pending"]
+        for pending_index, pending_entry in pending_entries:
+            self.set_download_status(pending_entry, pending_index, "ready")
 
 

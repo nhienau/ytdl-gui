@@ -100,6 +100,7 @@ class VideoInfoFrame(ctk.CTkFrame):
             "resolution": self._data["resolution"],
             "cookies": self._data["cookies"],
             "selected": True,
+            "status": "ready"
         }
         result = self.root_data.on_add_urls([data])
 
