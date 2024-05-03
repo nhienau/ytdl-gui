@@ -25,7 +25,7 @@ class TableFrame(ctk.CTkFrame):
         self._button_deselect_all.grid(row=0, column=19, padx=(5, 10), pady=10, sticky="ew")
 
         self._sheet = Sheet(self, data = [])
-        self._sheet.headers([" ", "Title", "URL", "Length", "Cookies", "Status", "Progress", "Downloaded bytes", "Total bytes", "Speed", "ETA", "Elapsed", "Video", "Audio", "Split v+a", "Split by chapters", "Resolution", "Size", "Subtitle", "Thumbnail", "Sponsorblock", "Output folder"])
+        self._sheet.headers([" ", "Title", "URL", "Length", "Cookies", "Status", "Progress", "Downloaded bytes", "Total bytes", "Speed", "ETA", "Elapsed", "Video", "Audio", "Split v+a", "Split by chapters", "Resolution", "Size", "Subtitle", "Thumbnail", "Output folder"])
         self._sheet.row_index([])
         self._sheet.checkbox("A", check_function=self._on_entry_checked)
         self._sheet.column_width(0, width=30)
@@ -33,7 +33,7 @@ class TableFrame(ctk.CTkFrame):
             self._sheet.column_width(x, width=110)
         self._sheet.column_width(1, width=240)
         self._sheet.column_width(2, width=240)
-        self._sheet.column_width(21, width=240)
+        self._sheet.column_width(20, width=240)
 
         self._selecting = False
         self._last_selected_row = None
@@ -66,7 +66,6 @@ class TableFrame(ctk.CTkFrame):
                 "Best" if entry["preset"]["max_file_size"] is None else f"<={entry['preset']['max_file_size']}MB",
                 "Yes" if entry["preset"]["subtitle"] is True else "No",
                 "Yes" if entry["preset"]["thumbnail"] is True else "No",
-                "Yes" if entry["preset"]["sponsorblock"] is True else "No",
                 entry["preset"]["output_path"]]
              for entry in data]
         if deselect is True:

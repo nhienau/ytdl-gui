@@ -9,7 +9,6 @@
     "max_file_size": null,
     "subtitle": false,
     "thumbnail": false,
-    "sponsorblock": false,
     "output_path": "",
     "editable": false
   },
@@ -23,7 +22,6 @@
     "max_file_size": null,
     "subtitle": false,
     "thumbnail": false,
-    "sponsorblock": false,
     "output_path": "",
     "editable": false
   },
@@ -37,7 +35,6 @@
     "max_file_size": null,
     "subtitle": false,
     "thumbnail": false,
-    "sponsorblock": false,
     "output_path": "",
     "editable": false
   }

@@ -79,24 +79,16 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
         self._checkbox_thumbnail = ctk.CTkCheckBox(self, text="Save thumbnail (if available)", onvalue=True, offvalue=False, variable=self._thumbnail)
         self._checkbox_thumbnail.grid(row=8, column=1, padx=(10, 0), pady=(0, 10), sticky="we", columnspan=3)
 
-        self._label_sponsorblock = ctk.CTkLabel(self, text="Sponsorblock")
-        self._label_sponsorblock.grid(row=9, column=0, pady=(0, 10), sticky="nw")
-
-        self._sponsorblock = ctk.BooleanVar(value=False)
-        self._sponsorblock.trace("w", master.enable_button_save)
-        self._checkbox_sponsorblock = ctk.CTkCheckBox(self, text="Remove sponsor sections", onvalue=True, offvalue=False, variable=self._sponsorblock)
-        self._checkbox_sponsorblock.grid(row=9, column=1, padx=(10, 0), pady=(0, 10), sticky="we", columnspan=3)
-
         self._label_output_folder = ctk.CTkLabel(self, text="Output folder")
-        self._label_output_folder.grid(row=10, column=0, pady=(0, 10), sticky="nw")
+        self._label_output_folder.grid(row=9, column=0, pady=(0, 10), sticky="nw")
 
         self._output_path = ctk.StringVar(value="")
         self._output_path.trace("w", master.enable_button_save)
         self._input_output_folder = ctk.CTkEntry(self, state="disabled", textvariable=self._output_path)
-        self._input_output_folder.grid(row=10, column=1, padx=(10, 0), pady=(0, 10), sticky="we", columnspan=2)
+        self._input_output_folder.grid(row=9, column=1, padx=(10, 0), pady=(0, 10), sticky="we", columnspan=2)
 
         self._button_browse = ctk.CTkButton(self, text="Browse", width=24, command=self._on_browse_dir_clicked)
-        self._button_browse.grid(row=10, column=3, padx=(5, 0), pady=(0, 10), sticky="we")
+        self._button_browse.grid(row=9, column=3, padx=(5, 0), pady=(0, 10), sticky="we")
 
         self._textbox_message = ctk.CTkTextbox(self)
         self._textbox_message.configure(height=20, state="disabled", border_width=0, border_spacing=0, corner_radius=0, fg_color="transparent")
@@ -144,7 +136,6 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
             "max_file_size": None if self._size_limit.get().lower() == "best" else self._frame_size_limit.size_limit.get(),
             "subtitle": self._subtitle.get(),
             "thumbnail": self._thumbnail.get(),
-            "sponsorblock": self._sponsorblock.get(),
             "output_path": self._output_path.get(),
             "editable": True if self._preset is None else self._preset["editable"]
         }
@@ -181,7 +172,6 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
 
         self._subtitle.set(preset["subtitle"])
         self._thumbnail.set(preset["thumbnail"])
-        self._sponsorblock.set(preset["sponsorblock"])
         self._output_path.set(preset["output_path"])
         set_textbox_value(self._textbox_message, "")
         self._textbox_message.grid_forget()
@@ -195,7 +185,7 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
             element.configure(state=combobox_state)
 
     def set_elements_state(self, state):
-        for element in [self._entry_preset_name, self._checkbox_split_video_audio, self._checkbox_chapter, self._frame_size_limit._input_size_limit, self._checkbox_subtitle, self._checkbox_thumbnail, self._checkbox_sponsorblock]:
+        for element in [self._entry_preset_name, self._checkbox_split_video_audio, self._checkbox_chapter, self._frame_size_limit._input_size_limit, self._checkbox_subtitle, self._checkbox_thumbnail]:
             element.configure(state=state)
 
         combobox_state = "readonly" if state == "normal" else "disabled"
@@ -204,8 +194,8 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
 
     def set_visibility_button_cancel_and_ok(self, visibility):
         if visibility is True:
-            self._button_cancel.grid(row=12, column=2, pady=(0, 10), sticky="e")
-            self._button_ok.grid(row=12, column=3, padx=(5, 0), pady=(0, 10), sticky="we")
+            self._button_cancel.grid(row=11, column=2, pady=(0, 10), sticky="e")
+            self._button_ok.grid(row=11, column=3, padx=(5, 0), pady=(0, 10), sticky="we")
         else:
             self._button_cancel.grid_forget()
             self._button_ok.grid_forget()
@@ -221,7 +211,6 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
         self._frame_size_limit.grid_forget()
         self._subtitle.set(False)
         self._thumbnail.set(False)
-        self._sponsorblock.set(False)
         self._output_path.set("")
         set_textbox_value(self._textbox_message, "")
         self._textbox_message.grid_forget()
@@ -253,13 +242,13 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
             self._parent.create_new_preset(preset)
         else:
             set_textbox_value(self._textbox_message, validation["error_message"])
-            self._textbox_message.grid(row=11, column=0, pady=(0, 10), sticky="ew", columnspan=4)
+            self._textbox_message.grid(row=10, column=0, pady=(0, 10), sticky="ew", columnspan=4)
 
     def show_confirm_delete_message(self, preset):
         set_textbox_value(self._textbox_message, f"Preset \"{preset['name']}\" will be deleted.")
-        self._textbox_message.grid(row=11, column=0, pady=(0, 10), sticky="ew", columnspan=4)
-        self._button_cancel_delete.grid(row=13, column=2, pady=(0, 10), sticky="e")
-        self._button_confirm_delete.grid(row=13, column=3, padx=(5, 0), pady=(0, 10), sticky="we")
+        self._textbox_message.grid(row=10, column=0, pady=(0, 10), sticky="ew", columnspan=4)
+        self._button_cancel_delete.grid(row=12, column=2, pady=(0, 10), sticky="e")
+        self._button_confirm_delete.grid(row=12, column=3, padx=(5, 0), pady=(0, 10), sticky="we")
 
     def _on_cancel_delete_clicked(self):
         set_textbox_value(self._textbox_message, "")
@@ -276,7 +265,7 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
             value = float(value)
         except:
             set_textbox_value(self._textbox_message, "File size limit must be a float number.")
-            self._textbox_message.grid(row=11, column=0, pady=(0, 10), sticky="ew", columnspan=4)
+            self._textbox_message.grid(row=10, column=0, pady=(0, 10), sticky="ew", columnspan=4)
 
     def validate_form_data(self):
         valid = True
@@ -314,6 +303,6 @@ class PresetDetailFrame(ctk.CTkScrollableFrame):
             self._parent.update_preset(preset)
         else:
             set_textbox_value(self._textbox_message, validation["error_message"])
-            self._textbox_message.grid(row=11, column=0, pady=(0, 10), sticky="ew", columnspan=4)
+            self._textbox_message.grid(row=10, column=0, pady=(0, 10), sticky="ew", columnspan=4)
 
 
