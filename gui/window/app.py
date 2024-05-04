@@ -130,7 +130,7 @@ class App(ctk.CTk):
             return
         elif len(selected_rows) == 1:
             entry = self.download_list[selected_rows[0]]
-            title = entry["title"]
+            title = entry.get("title") or ""
             self._settings_frame.display(entry["preset"])
             self._displaying_video_settings = True
             current_preset_settings = [p for p in self.preset if p["id"] == entry["preset"]["id"]]
@@ -261,7 +261,7 @@ class App(ctk.CTk):
         }
         self._table_frame.set_download_status(entry, index, "starting")
         self.download_info["pending"] = len([entry for entry in self.download_list if entry["status"] == "pending"])
-        self.download_info["downloading_title"] = entry["title"]
+        self.download_info["downloading_title"] = entry.get("title") or ""
         self._download_info_frame.display(self.download_info)
 
     def on_download_error(self, entry, index):

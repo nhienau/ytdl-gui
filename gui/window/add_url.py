@@ -1,4 +1,3 @@
-import asyncio
 import customtkinter as ctk
 import threading
 import tkinter as tk
@@ -95,10 +94,7 @@ class AddUrlWindow(ctk.CTkToplevel):
     def _extract_url(self, url, cookies_from_browser, stop_event):
         try:
             result = extract(url, cookies_from_browser, stop_event)
-            if result["webpage_url_domain"] is None or not "release_year" in result:
-                url = result["url"] if "url" in result else result["original_url"]
-                result = extract(url, cookies_from_browser, stop_event)
-            if not "thumbnails" in result or len(result.get("thumbnails")) == 0:
+            if "format" not in result and "entries" not in result:
                 raise Exception("URL cannot be resolved")
             self._handle_result(result, cookies_from_browser)
         except Exception as e:

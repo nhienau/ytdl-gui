@@ -43,16 +43,20 @@ class PlaylistInfoFrame(ctk.CTkFrame):
                 entry["uploader"] = data["uploader"]
             data["playlist_count"] = len(data["entries"])
                 
-        if data["uploader"] is None:
-            uploaders = list(set(map(lambda entry: entry["uploader"], data["entries"])))
+        if data.get("uploader") is None:
+            uploaders = list(set(map(lambda entry: entry.get("uploader"), data["entries"])))
             if len(uploaders) == 1:
                 data["uploader"] = uploaders[0]
 
         for entry in data["entries"]:
             entry["selected"] = True
 
-        data["entries"] = list(filter(lambda entry: (entry.get("view_count") or entry.get("concurrent_view_count")) is not None, data["entries"]))
-        data["available_count"] = len(data["entries"])
+        if "youtube" in data.get("extractor").lower():
+            data["entries"] = list(filter(lambda entry: (entry.get("view_count") or entry.get("concurrent_view_count")) is not None, data["entries"]))
+            data["available_count"] = len(data["entries"])
+        
+        if not data.get("playlist_count"):
+            data["playlist_count"] = len(data.get("entries"))
 
         self._data = data
         self._detail_frame.data = data
@@ -80,11 +84,11 @@ class PlaylistInfoFrame(ctk.CTkFrame):
         if self._detail_frame.add_option == "selected":
             data = filter(lambda entry: entry["selected"] is True, data)
         data = list(map(lambda entry: {
-            "title": entry["title"],
-            "uploader": entry["uploader"],
-            "duration": entry["duration"],
-            "duration_string": to_duration_string(entry["duration"]),
-            "url": entry["url"],
+            "title": entry.get("title") or "",
+            "uploader": entry.get("uploader") or "",
+            "duration": entry.get("duration") or "",
+            "duration_string": to_duration_string(entry.get("duration")),
+            "url": entry.get("url"),
             "cookies": self._data["cookies"],
             "selected": True,
             "status": "ready"

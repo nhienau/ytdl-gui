@@ -66,7 +66,7 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
         self._query_results = data
 
     def display(self, data):
-        list_to_display = [[entry["selected"], entry["title"], entry["uploader"], to_duration_string(entry["duration"]), entry["url"]] for entry in data]
+        list_to_display = [[entry["selected"], entry.get("title") or "", entry.get("uploader") or "", to_duration_string(entry.get("duration")), entry["url"]] for entry in data]
         currently_selected = self._sheet.get_currently_selected()
         if currently_selected:
             row = currently_selected.row
@@ -85,7 +85,7 @@ class PlaylistEntriesFrame(ctk.CTkFrame):
             self._button_clear_input.grid_forget()
             return
         
-        self._query_results = list(filter(lambda entry: query in entry["title"].lower(), self._data))
+        self._query_results = list(filter(lambda entry: query in entry.get("title").lower(), self._data))
         self.display(self._query_results)
         self._button_clear_input.grid(row=0, column=5, padx=(0, 5), pady=10, sticky="we")
 

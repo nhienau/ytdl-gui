@@ -46,11 +46,11 @@ class TableFrame(ctk.CTkFrame):
     def display(self, data, deselect = True, redraw = True):
         list_to_display = [
             [
-                entry["selected"], 
-                entry["title"], 
-                entry.get("webpage_url") or entry.get("url"), 
-                entry["duration_string"],
-                "None" if entry["cookies"] == "" else entry["cookies"].title(),
+                entry["selected"],
+                entry.get("title") or "",
+                entry.get("original_url") or entry.get("url"),
+                entry.get("duration_string") or "",
+                entry.get("cookies").title(),
                 entry["status"].title(),
                 "",
                 "",

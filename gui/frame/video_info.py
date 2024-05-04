@@ -73,12 +73,12 @@ class VideoInfoFrame(ctk.CTkFrame):
         self._root_data = root_data
 
     def display(self, data):
-        set_textbox_value(self._textbox_title, data["title"])
-        set_textbox_value(self._textbox_uploader, data["uploader"])
-        set_textbox_value(self._textbox_upload_date_value, to_date_string(data["upload_date"]))
-        set_textbox_value(self._textbox_duration_string, to_duration_string(int(data["duration"])))
-        set_textbox_value(self._textbox_url, data["original_url"])
-        set_textbox_value(self._textbox_resolution, data["resolution"])
+        set_textbox_value(self._textbox_title, data.get("title") or "")
+        set_textbox_value(self._textbox_uploader, data.get("uploader") or "")
+        set_textbox_value(self._textbox_upload_date_value, to_date_string(data.get("upload_date")) or "")
+        set_textbox_value(self._textbox_duration_string, to_duration_string(int(data.get("duration"))) or "")
+        set_textbox_value(self._textbox_url, data.get("original_url") or "")
+        set_textbox_value(self._textbox_resolution, data.get("resolution") or "")
 
     def clear_video_info(self):
         set_textbox_value(self._textbox_title, "")
@@ -90,14 +90,14 @@ class VideoInfoFrame(ctk.CTkFrame):
 
     def _on_add_url(self):
         data = {
-            "title": self._data["title"],
-            "uploader": self._data["uploader"],
-            "upload_date": self._data["upload_date"],
-            "duration": self._data["duration"],
+            "title": self._data.get("title") or "",
+            "uploader": self._data.get("uploader") or "",
+            "upload_date": self._data.get("upload_date") or "",
+            "duration": self._data.get("duration") or "",
             "duration_string": to_duration_string(int(self._data["duration"])),
-            "webpage_url": self._data["webpage_url"],
-            "original_url": self._data["original_url"],
-            "resolution": self._data["resolution"],
+            "webpage_url": self._data.get("webpage_url") or "",
+            "original_url": self._data.get("original_url") or "",
+            "resolution": self._data.get("resolution") or "",
             "cookies": self._data["cookies"],
             "selected": True,
             "status": "ready"
