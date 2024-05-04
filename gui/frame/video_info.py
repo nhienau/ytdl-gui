@@ -7,6 +7,7 @@ class VideoInfoFrame(ctk.CTkFrame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self._parent = master
+        self._root_data = master._root_data
         self.grid_columnconfigure((1), weight=1)
         self._data = {}
 
@@ -55,18 +56,31 @@ class VideoInfoFrame(ctk.CTkFrame):
         self._button_add = ctk.CTkButton(self, text="Add", command=self._on_add_url)
         self._button_add.grid(row=6, column=2, padx=10, pady=(0, 10), sticky="w")
 
-    def set_data(self, data):
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data):
         self._data = data
+    
+    @property
+    def root_data(self):
+        return self._root_data
+
+    @root_data.setter
+    def root_data(self, root_data):
+        self._root_data = root_data
 
     def display(self, data):
-        set_textbox_value(self._textbox_title, data["title"])
-        set_textbox_value(self._textbox_uploader, data["uploader"])
-        set_textbox_value(self._textbox_upload_date_value, to_date_string(data["upload_date"]))
-        set_textbox_value(self._textbox_duration_string, to_duration_string(int(data["duration"])))
-        set_textbox_value(self._textbox_url, data["original_url"])
-        set_textbox_value(self._textbox_resolution, data["resolution"])
+        set_textbox_value(self._textbox_title, data.get("title") or "")
+        set_textbox_value(self._textbox_uploader, data.get("uploader") or "")
+        set_textbox_value(self._textbox_upload_date_value, to_date_string(data.get("upload_date")) or "")
+        set_textbox_value(self._textbox_duration_string, to_duration_string(int(data.get("duration"))) or "")
+        set_textbox_value(self._textbox_url, data.get("original_url") or "")
+        set_textbox_value(self._textbox_resolution, data.get("resolution") or "")
 
-    def clear_text(self):
+    def clear_video_info(self):
         set_textbox_value(self._textbox_title, "")
         set_textbox_value(self._textbox_uploader, "")
         set_textbox_value(self._textbox_upload_date_value, "")
@@ -76,27 +90,28 @@ class VideoInfoFrame(ctk.CTkFrame):
 
     def _on_add_url(self):
         data = {
-            "title": self._data["title"],
-            "uploader": self._data["uploader"],
-            "upload_date": self._data["upload_date"],
-            "duration": self._data["duration"],
+            "title": self._data.get("title") or "",
+            "uploader": self._data.get("uploader") or "",
+            "upload_date": self._data.get("upload_date") or "",
+            "duration": self._data.get("duration") or "",
             "duration_string": to_duration_string(int(self._data["duration"])),
-            "webpage_url": self._data["webpage_url"],
-            "original_url": self._data["original_url"],
-            "resolution": self._data["resolution"],
+            "webpage_url": self._data.get("webpage_url") or "",
+            "original_url": self._data.get("original_url") or "",
+            "resolution": self._data.get("resolution") or "",
             "cookies": self._data["cookies"],
             "selected": True,
+            "status": "ready"
         }
-        on_add_urls = self._parent.callbacks["on_add_urls"]
-        result = on_add_urls([data])
+        result = self.root_data.on_add_urls([data])
 
         if result["added"] == 1:
             message = f"Successfully added \"{data['title']}\"."
         else:
             message = f"\"{data['title']}\" has already been added."
         
-        self._parent.on_add_urls_callback(message)
-        self.clear_text()
+        set_textbox_value(self._parent._textbox_message, message)
+        self._parent._show_message()
+        self.clear_video_info()
         self.grid_forget()
         
 

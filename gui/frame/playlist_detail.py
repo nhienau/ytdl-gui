@@ -53,21 +53,26 @@ class PlaylistDetailFrame(ctk.CTkScrollableFrame):
 
         self._button_cancel_add = ctk.CTkButton(self, text="Cancel", width=24, command=self.hide_confirm_message)
     
-    def set_data(self, data):
+    @property
+    def data(self):
+        return self._data
+
+    @data.setter
+    def data(self, data):
         self._data = data
 
     def display(self, data):
         self.hide_additional_message()
         self.hide_confirm_message()
-        set_textbox_value(self._textbox_playlist_title, data["title"])
-        set_textbox_value(self._textbox_playlist_uploader, data["uploader"])
-        set_textbox_value(self._textbox_url, data["original_url"])
+        set_textbox_value(self._textbox_playlist_title, data.get("title") or "")
+        set_textbox_value(self._textbox_playlist_uploader, data.get("uploader") or "")
+        set_textbox_value(self._textbox_url, data.get("original_url") or "")
 
-        if (data["available_count"] < data["playlist_count"]):
+        if data.get("available_count") and data.get("available_count") < data.get("playlist_count"):
             total_str = f"{data['playlist_count']} (available: {data['available_count']})"
             set_textbox_value(self._textbox_playlist_count_value, total_str)
         else:
-            set_textbox_value(self._textbox_playlist_count_value, data["playlist_count"])
+            set_textbox_value(self._textbox_playlist_count_value, data.get("playlist_count") or len(data.get("entries")))
         
         if len(data["entries"]) > 0:
             self._button_add_selected.grid(row=5, column=2, pady=(0, 5), sticky="e")
