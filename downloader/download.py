@@ -57,7 +57,8 @@ def extract_options(preset, cookies):
         options["format_sort"].append(f"res:{preset['resolution'][:-1]}")
 
     if preset["max_file_size"] is not None:
-        options["format_sort"].append(f"filesize~{preset['max_file_size']:.2f}M")
+        size_str = "{:.1f}".format(preset["max_file_size"])
+        options["format_sort"].append(f"filesize~{size_str}M")
 
     options["writesubtitles"] = preset["subtitle"]
     options["writethumbnail"] = preset["thumbnail"]

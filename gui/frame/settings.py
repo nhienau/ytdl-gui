@@ -139,7 +139,7 @@ class SettingsFrame(ctk.CTkScrollableFrame):
             "split_video_and_audio": self._split_video_audio.get() if all(el in self._download_option_value.get().lower() for el in ["video", "audio"]) else False,
             "split_by_chapters": self._split_by_chapters.get(),
             "resolution": None if self._resolution.get().lower() == "best" else self._resolution.get(),
-            "max_file_size": None if self._size_limit.get().lower() == "best" else self._frame_size_limit.size_limit.get(),
+            "max_file_size": None if self._size_limit.get().lower() == "best" else float(self._frame_size_limit.size_limit.get()),
             "subtitle": self._subtitle.get(),
             "thumbnail": self._thumbnail.get(),
             "output_path": self._output_path.get(),
