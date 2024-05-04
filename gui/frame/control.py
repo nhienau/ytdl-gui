@@ -26,7 +26,7 @@ class ControlFrame(ctk.CTkFrame):
 
         self._icon_stop = ctk.CTkImage(light_image=Image.open("gui/icons/stop.png"), dark_image=Image.open("gui/icons/stop.png"), size=(32, 32))
 
-        self._button_stop = ctk.CTkButton(self, image=self._icon_stop, text="", width=32, fg_color="transparent", hover_color="#EBEBEB", anchor="center", command=master.on_stop_downloading_clicked)
+        self._button_stop = ctk.CTkButton(self, image=self._icon_stop, text="", width=32, fg_color="transparent", hover_color="#EBEBEB", anchor="center", command=master.on_stop_downloading_clicked, state="disabled")
         self._button_stop.grid(row=0, column=3)
 
     def _on_add_url_click(self):
