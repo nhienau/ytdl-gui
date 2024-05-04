@@ -2,6 +2,7 @@ import asyncio
 import customtkinter as ctk
 import threading
 import tkinter as tk
+import traceback
 
 from downloader.extractor import extract
 from gui.frame.cookies import LoadCookiesFrame
@@ -18,7 +19,6 @@ class AddUrlWindow(ctk.CTkToplevel):
         self.grid_rowconfigure(5, weight=1)
         self._root_data = list(args)[0]._parent
 
-        self._async_loop = asyncio.get_event_loop()
         self._thread = None
         self._stop_event = threading.Event()
         self._cookies_from_browser = ""
@@ -89,50 +89,23 @@ class AddUrlWindow(ctk.CTkToplevel):
         self._set_controls_state("disabled")
         
         self._stop_event.clear()
-        self._async_loop = asyncio.new_event_loop()
-        self._thread = threading.Thread(target=self._asyncio_thread, args=(self._async_loop, url, self._cookies_from_browser, self._handle_result))
-        self._thread.daemon = True
+        self._thread = threading.Thread(target=self._extract_url, args=(url, self._cookies_from_browser, self._stop_event), daemon=True)
         self._thread.start()
 
-    def _asyncio_thread(self, async_loop, url, cookies_from_browser, callback):
+    def _extract_url(self, url, cookies_from_browser, stop_event):
         try:
-            result = async_loop.run_until_complete(self._extract_url(url, cookies_from_browser))
-            if not self._stop_event.is_set():
-                callback(result, cookies_from_browser)
+            result = extract(url, cookies_from_browser, stop_event)
+            if result["webpage_url_domain"] is None or not "release_year" in result:
+                url = result["url"] if "url" in result else result["original_url"]
+                result = extract(url, cookies_from_browser, stop_event)
+            if not "thumbnails" in result or len(result.get("thumbnails")) == 0:
+                raise Exception("URL cannot be resolved")
+            self._handle_result(result, cookies_from_browser)
         except Exception as e:
-            self._hide_message()
-
-            error_name = e.__class__.__name__
-            message = e.msg if hasattr(e, "msg") else str(e)
-
-            substr = ["Private video", "for registered users", "playlist does not exist"]
-            private = any(str in message for str in substr)
-            
-            if (error_name == "FileNotFoundError"):
-                self._load_cookies_frame.grid(row=3, column=2, pady=(0, 10), sticky="ew", columnspan=16)
-                set_textbox_value(self._load_cookies_frame.textbox_message, "Could not find browser cookies. Make sure you provided the appropriate browser name.")
-            elif private:
-                self._load_cookies_frame.grid(row=3, column=2, pady=(0, 10), sticky="ew", columnspan=16)
-                set_textbox_value(self._load_cookies_frame.textbox_message, self._load_cookies_frame.default_message)
-            else:
-                set_textbox_value(self._textbox_message, "An error occurred when trying to extract URL. Make sure you provided a valid URL and try again.")
-                self._show_message()
-                self._entry_var.set("")
-
-            print(error_name + ": " + message)
-        finally:
-            self._set_controls_state("normal")
-            self._cookies_from_browser = ""
-            async_loop.stop()
-
-    async def _extract_url(self, url, cookies_from_browser = ""):
-        result = await extract(url, cookies_from_browser)
-        if result["webpage_url_domain"] is None or not "release_year" in result:
-            url = result["url"] if "url" in result else result["original_url"]
-            result = await extract(url, cookies_from_browser)
-        if not "thumbnails" in result or len(result.get("thumbnails")) == 0:
-            raise Exception("URL cannot be resolved")
-        return result
+            if e.__class__.__name__ == "ExtractionStoppedException":
+                print(e)
+                return
+            self._on_result_error(e)
 
     def _handle_result(self, result, cookies_from_browser = ""):
         self._hide_message()
@@ -150,6 +123,34 @@ class AddUrlWindow(ctk.CTkToplevel):
             self._video_info_frame.grid(row=4, column=6, sticky="we", pady=(10, 10), columnspan=10)
             self._video_info_frame.data = result
             self._video_info_frame.display(result)
+        
+        self._set_controls_state("normal")
+        self._cookies_from_browser = ""
+
+    def _on_result_error(self, e):
+        self._hide_message()
+
+        error_name = e.__class__.__name__
+        message = e.msg if hasattr(e, "msg") else str(e)
+
+        substr = ["Private video", "for registered users", "playlist does not exist"]
+        private = any(str in message for str in substr)
+        
+        if (error_name == "FileNotFoundError"):
+            self._load_cookies_frame.grid(row=3, column=2, pady=(0, 10), sticky="ew", columnspan=16)
+            set_textbox_value(self._load_cookies_frame.textbox_message, "Could not find browser cookies. Make sure you provided the appropriate browser name.")
+        elif private:
+            self._load_cookies_frame.grid(row=3, column=2, pady=(0, 10), sticky="ew", columnspan=16)
+            set_textbox_value(self._load_cookies_frame.textbox_message, self._load_cookies_frame.default_message)
+        else:
+            set_textbox_value(self._textbox_message, "An error occurred when trying to extract URL. Make sure you provided a valid URL and try again.")
+            self._show_message()
+            self._entry_var.set("")
+            print(traceback.format_exc())
+
+        self._set_controls_state("normal")
+        self._cookies_from_browser = ""
+        print(error_name + ": " + message)
 
     def on_cookies_submit(self):
         browser = self._load_cookies_frame.get_browser_value().lower()
