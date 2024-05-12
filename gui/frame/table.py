@@ -332,7 +332,7 @@ class TableFrame(ctk.CTkFrame):
             extension_info["extension"] = file_extension
             return
 
-        if progress["downloaded_bytes"] is None:
+        if not progress.get("downloaded_bytes"):
             downloaded_bytes_str = ""
         else:
             downloaded_bytes = convert_byte(progress["downloaded_bytes"])
@@ -344,7 +344,7 @@ class TableFrame(ctk.CTkFrame):
             total_bytes = convert_byte(progress.get("total_bytes") or progress.get("total_bytes_estimate"))
             total_bytes_str = f"{(total_bytes['result']):.1f} {total_bytes['unit']}"
         
-        if progress["speed"] is None:
+        if not progress.get("speed"):
             speed_str = ""
         else:
             speed = convert_byte(progress["speed"])
