@@ -76,3 +76,7 @@ python3 main.py
 ### Downloading
 
 ![downloading](https://github.com/nhienau/ytdl-gui/assets/115203499/c8c966ff-4c16-4b29-b779-47461bd95dd3)
+
+## Assignment report
+
+[Report](https://drive.google.com/file/d/1bWU3Y5nPoGJY5niQUxj_35gfGBbo2_JL/view)
