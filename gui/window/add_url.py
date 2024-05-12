@@ -94,7 +94,7 @@ class AddUrlWindow(ctk.CTkToplevel):
     def _extract_url(self, url, cookies_from_browser, stop_event):
         try:
             result = extract(url, cookies_from_browser, stop_event)
-            if "format" not in result and "entries" not in result:
+            if ("format" not in result or "formats" not in result) and "entries" not in result:
                 raise Exception("URL cannot be resolved")
             self._handle_result(result, cookies_from_browser)
         except Exception as e:
@@ -129,7 +129,7 @@ class AddUrlWindow(ctk.CTkToplevel):
         error_name = e.__class__.__name__
         message = e.msg if hasattr(e, "msg") else str(e)
 
-        substr = ["Private video", "for registered users", "playlist does not exist"]
+        substr = ["Private video", "for registered users", "playlist does not exist", "No video formats found"]
         private = any(str in message for str in substr)
         
         if (error_name == "FileNotFoundError"):
