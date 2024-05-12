@@ -57,23 +57,22 @@ python3 main.py
 ```
 
 ## Screenshots
-
 ### Main GUI
 
-![main gui](https://imgur.com/GrQCAfw)
+![main gui](https://github.com/nhienau/ytdl-gui/assets/115203499/97f3f543-d227-46e2-8d21-6338c21303c3)
 
 ### Extract video URL
 
-![extract video](https://imgur.com/XTaO2B6)
+![extract video](https://github.com/nhienau/ytdl-gui/assets/115203499/41babdba-ed6a-4f93-ab55-de12b99c2d75)
 
 ### Extract playlist
 
-![extract playlist](https://imgur.com/5m3MGnv)
+![extract playlist](https://github.com/nhienau/ytdl-gui/assets/115203499/5c2e1379-8435-4d31-a237-2494fb8956bb)
 
 ### Options, preset
 
-![preset](https://imgur.com/5QBYymb)
+![preset](https://github.com/nhienau/ytdl-gui/assets/115203499/6532ac25-0b6a-41dc-9e75-22c7f232f8c4)
 
 ### Downloading
 
-![downloading](https://imgur.com/pJaD5Eg)
+![downloading](https://github.com/nhienau/ytdl-gui/assets/115203499/c8c966ff-4c16-4b29-b779-47461bd95dd3)
