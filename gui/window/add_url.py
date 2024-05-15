@@ -94,8 +94,13 @@ class AddUrlWindow(ctk.CTkToplevel):
     def _extract_url(self, url, cookies_from_browser, stop_event):
         try:
             result = extract(url, cookies_from_browser, stop_event)
-            if ("format" not in result or "formats" not in result) and "entries" not in result:
-                raise Exception("URL cannot be resolved")
+            if "format" not in result and "formats" not in result and "entries" not in result:
+                if "url" in result:
+                    result = extract(result.get("url"), cookies_from_browser, stop_event)
+                    if "format" not in result and "formats" not in result and "entries" not in result:
+                        raise Exception("URL cannot be resolved")
+                else:
+                    raise Exception("URL cannot be resolved")
             self._handle_result(result, cookies_from_browser)
         except Exception as e:
             if e.__class__.__name__ == "ExtractionStoppedException":

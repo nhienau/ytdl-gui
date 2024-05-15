@@ -57,6 +57,7 @@ python3 main.py
 ```
 
 ## Screenshots
+
 ### Main GUI
 
 ![main gui](https://github.com/nhienau/ytdl-gui/assets/115203499/97f3f543-d227-46e2-8d21-6338c21303c3)
@@ -79,4 +80,4 @@ python3 main.py
 
 ## Assignment report
 
-[Report](https://drive.google.com/file/d/1bWU3Y5nPoGJY5niQUxj_35gfGBbo2_JL/view)
+[Report](https://drive.google.com/file/d/1eBwB7TW6oXqLQix6N8ranTR2tFg6hb7R/view?usp=sharing)
