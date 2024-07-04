@@ -17,4 +17,4 @@ SecretStorage==3.3.3
 tksheet==7.0.5
 urllib3==2.2.1
 websockets==12.0
-yt-dlp==2024.3.10
+yt-dlp==2024.7.1
